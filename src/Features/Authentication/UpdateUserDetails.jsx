@@ -6,8 +6,9 @@ import { useUpdateUser } from "./useUpdateUser";
 import MiniLoader from "../../ui/MiniLoader";
 import Button from "../../ui/Button";
 import { FaUserCircle } from "react-icons/fa";
-import { useUpdateUserDetails, useUserDetailed } from "../../Services/apiUsers"
+import { useUpdateUserDetails, useUserDetailed } from "../../Hooks/useUserProfile";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 
 export default function UpdateUserDetails() {
   const { user } = useUser();

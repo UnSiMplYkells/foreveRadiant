@@ -8,25 +8,28 @@ import toast from "react-hot-toast";
 
 export default function CartItem({item}) {
   const { products: { name, image_url=[], price, available}, quantity: itemQuantity, size, id: cartItemId, product_id} = item;
-  const dispatch = useDispatch()
+  const dispatch = useDispatch();
 
-  const checkedItems = useSelector(state => state.cart.checkedItems)
-  const isChecked = checkedItems.includes(cartItemId)
+  const itemPrice = Number(item.size_price) || Number(price);
+  const formattedSize = size ? (String(size).endsWith("ml") || String(size).endsWith("g") ? size : `${size}ml`) : "";
+
+  const checkedItems = useSelector(state => state.cart.checkedItems);
+  const isChecked = checkedItems.includes(cartItemId);
 
   function handleCheckboxChange(e) {
-    const checked = e.target.checked
+    const checked = e.target.checked;
     if(checked) {
-      dispatch(addCheckedItem(cartItemId))
+      dispatch(addCheckedItem(cartItemId));
     } else {
-      dispatch(removeCheckedItem(cartItemId))
+      dispatch(removeCheckedItem(cartItemId));
     }
 
-    if(available < itemQuantity) return toast("Not enough quantity available")
+    if(available < itemQuantity) return toast("Not enough quantity available");
   };
 
   return (
     <li>
-      <ProductDetails  checked={isChecked}>
+      <ProductDetails checked={isChecked}>
         <Details>
           <Input
             type="checkbox"
@@ -38,8 +41,10 @@ export default function CartItem({item}) {
           <Div>
             <Linked to={`/productDetails/${product_id}`}><p>{name}</p></Linked>
             <Div2>
-              <p><span>NGN</span>{price}</p>
-              <VolumeOption><p>{size}ml</p></VolumeOption>
+              <p><span>NGN</span>{itemPrice.toLocaleString()}</p>
+              {formattedSize && (
+                <VolumeOption><p>{formattedSize}</p></VolumeOption>
+              )}
             </Div2>
           </Div>
         </Details>

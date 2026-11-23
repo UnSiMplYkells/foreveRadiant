@@ -1,68 +1,122 @@
 import { forwardRef } from "react";
-import styled from 'styled-components';
+import styled from "styled-components";
 
-const InputContainer = styled.div`
-  position: relative;
-  margin-top: 20px;
-`;
-
-const Input = styled.input`
+const FieldWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-top: 1.6rem;
   width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 16px;
-  outline: none;
-  transition: border-color 0.3s ease;
-  
-  &:focus {
-    border-color: green;
-  }
-  
-  &:disabled {
-    background-color: #ccc;
-    cursor: not-allowed;
-    opacity: 0.8;
-  }
 `;
 
 const Label = styled.label`
-  position: absolute;
-  top: 50%;
-  left: 10px;
-  transform: translateY(-50%);
-  color: #999;
-  font-size: 16px;
-  pointer-events: none;
-  transition: all 0.3s ease;
-  
-  ${Input}:focus + &,
-  ${Input}:not(:placeholder-shown) + & {
-    top: 0;
-    left: 10px;
-    font-size: 12px;
-    color: green;
-    background-color: cyan;
-    padding: 0 5px;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--color-grey-700);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const InputWrapper = styled.div`
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+`;
+
+const StyledInput = styled.input`
+  width: 100%;
+  padding: 1.2rem 1.4rem;
+  padding-right: ${(props) => (props.hasAction ? "4.2rem" : "1.4rem")};
+  background-color: var(--color-grey-50);
+  border: 1.5px solid ${(props) => (props.hasError ? "#ef4444" : "var(--color-grey-300)")};
+  border-radius: 8px;
+  color: var(--color-grey-900);
+  font-size: 1.4rem;
+  transition: all 0.2s ease;
+  outline: none;
+
+  &::placeholder {
+    color: var(--color-grey-400);
+    font-size: 1.3rem;
+  }
+
+  &:focus {
+    border-color: #d97706;
+    background-color: var(--color-grey-0);
+    box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.15);
+  }
+
+  &:disabled {
+    background-color: var(--color-grey-200);
+    color: var(--color-grey-400);
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 `;
 
-export default forwardRef(function CustomInput({ type, id, value, onClick, onChange, disabled, children, ...rest}, ref) {
+const ActionSlot = styled.div`
+  position: absolute;
+  right: 1.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-grey-500);
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  font-size: 1.8rem;
+  padding: 0.2rem;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: var(--color-grey-800);
+  }
+`;
+
+const ErrorText = styled.span`
+  font-size: 1.2rem;
+  color: #ef4444;
+  margin-top: 0.2rem;
+  display: block;
+`;
+
+const CustomInput = forwardRef(function CustomInput(
+  {
+    type = "text",
+    id,
+    label,
+    children,
+    error,
+    actionSlot,
+    placeholder,
+    disabled,
+    ...rest
+  },
+  ref
+) {
+  const displayLabel = label || children;
+
   return (
-      <InputContainer>
-        <Input
-          type={type}
+    <FieldWrapper>
+      {displayLabel && <Label htmlFor={id}>{displayLabel}</Label>}
+      <InputWrapper>
+        <StyledInput
           ref={ref}
           id={id}
-          required
-          placeholder=""
-          value={value}
-          onClick={onClick}
-          onChange={onChange}
+          type={type}
+          placeholder={placeholder}
           disabled={disabled}
+          hasError={Boolean(error)}
+          hasAction={Boolean(actionSlot)}
           {...rest}
         />
-        <Label htmlFor={id}>{children}</Label>
-    </InputContainer>
+        {actionSlot && <ActionSlot>{actionSlot}</ActionSlot>}
+      </InputWrapper>
+      {error && <ErrorText>{error}</ErrorText>}
+    </FieldWrapper>
   );
-})
+});
+
+export default CustomInput;

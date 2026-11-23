@@ -36,8 +36,8 @@ export default function OrderSummary() {
                 <TableRow key={id}>
                   <TableCell $name>{products.name}</TableCell>
                   <TableCell $quantity>{quantity}</TableCell>
-                  <TableCell>{size}ml</TableCell>
-                  <TableCell>₦{products.price}</TableCell>
+                  <TableCell>{size ? (String(size).endsWith("ml") || String(size).endsWith("g") ? size : `${size}ml`) : "-"}</TableCell>
+                  <TableCell>₦{(Number(item.size_price) || Number(products.price))?.toLocaleString()}</TableCell>
                 </TableRow>
               );
             })}

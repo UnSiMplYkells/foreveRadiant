@@ -11,8 +11,8 @@ export function useCreateOrder(){
       queryClient.invalidateQueries(["orders"])
       toast.success("Order placed successfully")
     },
-    onError: (error) => {
-      toast.error("could not place order");
+    onError: (err) => {
+      toast.error(err.message || "could not place order");
     },
   })
 

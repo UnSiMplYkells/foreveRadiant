@@ -1,134 +1,251 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useState } from "react";
+import styled from "styled-components";
+import Reviews from "../Features/Reviews/Reviews";
+import { useProductReviews } from "../Hooks/useReviews";
+import { FaLeaf, FaCheck } from "react-icons/fa";
 
 const Container = styled.div`
-  margin: 7rem auto 2rem;
+  margin: 5rem auto 3rem;
+  width: 90%;
+  max-width: 1200px;
 
-  @media (width > 1200px){
-    width: 80%;
+  @media (max-width: 1024px) {
+    margin: 3rem auto 4rem;
   }
 
-  @media (width < 1024px){
-    margin: -4rem auto 5rem;
-  }
-
-  @media (width < 768px){ /*no need for margin because of gap in collectionmenuitem*/
-    margin: 0 auto; 
-    width: 90%;
-    min-width: 400px;
-  }
-
-  @media (width < 540px){ /*no need for margin because of gap in collectionmenuitem*/
-    width: 100%;
-    min-width: 250px;
-    margin-bottom: 4rem;
+  @media (max-width: 540px) {
+    width: 96%;
+    margin: 2rem auto;
   }
 `;
 
 const TabList = styled.ul`
   display: flex;
+  gap: 0.8rem;
+  border-bottom: 2px solid var(--color-grey-200);
+  list-style: none;
+  padding: 0;
+  margin: 0;
 `;
 
 const Tab = styled.li`
-  width: fit-content;
-  border: 1px solid #e5e7eb;
+  margin-bottom: -2px;
 `;
 
-const TabButton = styled.h4`
-  padding: 0.5rem 1rem;
-  font-weight: ${props => props.active ? 'bold' : 'normal'};
+const TabButton = styled.button`
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid ${(props) => (props.active ? "#d97706" : "transparent")};
+  color: ${(props) => (props.active ? "var(--color-grey-900)" : "var(--color-grey-500)")};
+  padding: 1.2rem 2rem;
+  font-size: 1.5rem;
+  font-weight: ${(props) => (props.active ? "700" : "500")};
   cursor: pointer;
-`;
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  transition: all 0.2s ease;
 
-const Content = styled.div`
-  padding: 1rem;
-  border: 1px solid #e5e7eb;
-  max-height: 500px; 
-  overflow: scroll;
-
-  scrollbar-width: none; /* For Firefox */
-  -ms-overflow-style: none; /* For Internet Explorer and Edge */
-  
-  &::-webkit-scrollbar {
-    display: none; /* For Chrome, Safari, and Opera */
+  &:hover {
+    color: var(--color-grey-900);
   }
 
-  @media (width < 540px){
-    max-height: 350px; 
+  span.badge {
+    background: ${(props) => (props.active ? "#d97706" : "var(--color-grey-200)")};
+    color: ${(props) => (props.active ? "#ffffff" : "var(--color-grey-600)")};
+    font-size: 1.1rem;
+    font-weight: 700;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+  }
+`;
+
+const ContentPanel = styled.div`
+  padding: 3rem 1rem;
+  min-height: 250px;
+`;
+
+const DescriptionGrid = styled.div`
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 4rem;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+    gap: 2.5rem;
+  }
+`;
+
+const MainText = styled.div`
+  p {
+    font-size: 1.5rem;
+    line-height: 1.8;
+    color: var(--color-grey-700);
+    margin-bottom: 1.8rem;
+  }
+
+  h4 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-grey-900);
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+
+    li {
+      font-size: 1.4rem;
+      color: var(--color-grey-700);
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+
+      svg {
+        color: #10b981;
+        flex-shrink: 0;
+      }
+    }
+  }
+`;
+
+const SidebarHighlights = styled.div`
+  background: var(--color-grey-50);
+  border: 1px solid var(--color-grey-200);
+  border-radius: 12px;
+  padding: 2.2rem;
+  height: fit-content;
+
+  h4 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--color-grey-900);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 1.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+`;
+
+const HighlightItem = styled.div`
+  margin-bottom: 1.4rem;
+  padding-bottom: 1.4rem;
+  border-bottom: 1px solid var(--color-grey-200);
+
+  &:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  strong {
+    display: block;
     font-size: 1.3rem;
+    color: var(--color-grey-800);
+    margin-bottom: 0.3rem;
+  }
+
+  span {
+    font-size: 1.2rem;
+    color: var(--color-grey-500);
+    line-height: 1.4;
+    display: block;
   }
 `;
 
-export default function ReviewsDesc({item}) {
-const [activeTab, setActiveTab] = useState('description');
+export default function ReviewsDesc({ item = {} }) {
+  const [activeTab, setActiveTab] = useState("reviews"); // Default to reviews so user sees the review system immediately
+  const { totalReviews } = useProductReviews(item?.id);
 
-return (
-<Container>
-    <TabList>  {/* ul*/}
-        <Tab active={activeTab==='description' }> {/*li*/}
-            <TabButton active={activeTab==='description' } onClick={()=> setActiveTab('description')}>
-                Description
-            </TabButton>
+  return (
+    <Container>
+      <TabList>
+        <Tab>
+          <TabButton
+            active={activeTab === "reviews"}
+            onClick={() => setActiveTab("reviews")}
+          >
+            Customer Reviews
+            <span className="badge">{totalReviews}</span>
+          </TabButton>
         </Tab>
-        <Tab active={activeTab==='reviews' }> {/*li*/}
-            <TabButton active={activeTab==='reviews' } onClick={()=> setActiveTab('reviews')}>
-                Reviews
-            </TabButton>
+        <Tab>
+          <TabButton
+            active={activeTab === "description"}
+            onClick={() => setActiveTab("description")}
+          >
+            Product Overview & Ritual
+          </TabButton>
         </Tab>
-    </TabList>
-    <Content>
-        {activeTab === 'description' && (
-        <div>
-          <p>
-            {item.description} lorem Lorem ipsum is a placeholder text
-            commonly used to demonstrate the visual form of a document or a typeface12. It
-            is based on a scrambled section of a Latin text by Cicero, with words altered, added, an
-            d removed to make it nonsensical and improper3. It was introduced in the 1950s in the form of
-            Letraset typeface specimens3. It is the standard placeholder text of the printing and publishing i
-            ndustrieLorem ipsum is a placeholder text commonly used to demonstrate the visual form of a docum
-            ent or a typeface12. It is based on a scrambled section of a Latin text by Cicero, with words alt
-            ered, added, and removed to make it nonsensical and improper3. It was introduced in the 1950s i
-            n the form of Letraset typeface specimens3. It is the standard placeholder text of the printing
-            and publishing industrieLorem ipsum is a placeholder text commonly used to demonstrate the 
-            visual form of a document or a typeface12. It is based on a scrambled section of a Latin te
-            xt by Cicero, with words altered, added, and removed to make it nonsensical and improper3
-            . It was introduced in the 1950s in the form of Letraset typeface specimens3. It is th
-            e standard placeholder text of the printing and publishing industrieLorem ipsum i
-            s a placeholder text commonly used to demonstrate the visual form of a document 
-            or a typeface12. It is based on a scrambled section of a Latin text by Cic
-            ero, with words altered, added, and removed to make it nonsensical and 
-            improper3. It was introduced in the 1950s in the form of Letraset t
-            ypeface specimens3. It is the standard placeholder text of the is the st
-            printing and publishing industrieLorem ipsum is a placeholder text commo
-            nly used to demonstrate the visual form of a document or a typeface12. It is base
-            d on a scrambled section of a Latin text by Cicero, with words altered, added, and removed to make i
-            t nonsensical and improper3. It was introduced in the 1950s in the form of Letraset typeface specimens3. 
-            It is the standard placeholder text of the printing and publishing industrieLorem ipsum is a placeholder tex
-            t commonly used to demonstrate the visual form of a document or a typeface12. It is based on a scrambled sectio
-            n of a Latin text by Cicero, with words altered, added, and removed to make it nonsensical and improper
-            3. It was introduced in the 1950s in the form of Letraset typeface specimens3. It is the standard pl
-            aceholder text of the printing and publishing industrieLorem ipsum is a placeholder text commonly us
-            ed to demonstrate the visual form of a document or a typeface12. It is based on a scrambled sectio
-            n of a Latin text by Cicero, with words altered, added, and removed to make it nonsensical and i
-            mproper3. It was introduced in the 1950s in t. It 
-            he form of Letraset typeface specimens3 andard placeholder text of the printing 
-            nd publishing industrieLorem ipsum is a placehold
-            er text commonly used to demonstrate the visual for
-            m of a document or a typeface12. It is based on a scrambl
-            ed section of a Latin text by Cicero, with words altered, added
-            , and removed to make it nonsensical and improper3. It was introduced 
-            in the 1950s in the form of Letraset typeface specimens3. It is the standard
-            placeholder text of the printing and publishing industrie
-          </p>
-        </div>
+      </TabList>
 
+      <ContentPanel>
+        {activeTab === "description" && (
+          <DescriptionGrid>
+            <MainText>
+              <p>{item.description}</p>
+
+              <h4>Directions for Use</h4>
+              <p>
+                Dispense a generous amount into clean palms. Gently warm between fingertips
+                and massage with circular upward motions into scalp, hair, or freshly cleansed
+                skin. Use morning and night as part of your daily radiance routine.
+              </p>
+
+              <h4>Formulated With Pure Intentions</h4>
+              <ul>
+                <li>
+                  <FaCheck /> 100% Cold-pressed botanical extracts & virgin seed oils
+                </li>
+                <li>
+                  <FaCheck /> Zero artificial sulfates, parabens, phthalates, or silicones
+                </li>
+                <li>
+                  <FaCheck /> Cruelty-free, vegan, and environmentally conscious packaging
+                </li>
+                <li>
+                  <FaCheck /> Dermatologist-tested and pH balanced for sensitive skin & scalp
+                </li>
+              </ul>
+            </MainText>
+
+            <SidebarHighlights>
+              <h4>
+                <FaLeaf style={{ color: "#10b981" }} /> Purity Highlights
+              </h4>
+
+              <HighlightItem>
+                <strong>Ethical Botanical Sourcing</strong>
+                <span>Directly sourced from sustainable small-batch organic farmers.</span>
+              </HighlightItem>
+
+              <HighlightItem>
+                <strong>Active Efficacy</strong>
+                <span>Clinically tested for rapid absorption and moisture retention.</span>
+              </HighlightItem>
+
+              <HighlightItem>
+                <strong>Recyclable Glass Packaging</strong>
+                <span>Preserves essential nutrient potency while safeguarding the planet.</span>
+              </HighlightItem>
+            </SidebarHighlights>
+          </DescriptionGrid>
         )}
-        {activeTab === 'reviews' && (
-        <div>
-            null
-        </div>
+
+        {activeTab === "reviews" && (
+          <Reviews productId={item.id} />
         )}
-    </Content>
-</Container>
-);
+      </ContentPanel>
+    </Container>
+  );
 }

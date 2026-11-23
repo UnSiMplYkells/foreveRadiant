@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import styled, { keyframes, css } from "styled-components";
-import { NavLink, useNavigate, useNavigation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import Price from '../ui/Price';
 import Button from "../ui/Button";
 import QuantityCounter from '../ui/QuantityCounter';
@@ -10,107 +10,140 @@ import { useAddToCart } from "../Features/Cart/useAddToCart";
 import { useAddToCart2 } from "../Features/Cart/useAddToCart";
 import MiniLoader from "../ui/MiniLoader";
 
-export default function CartModal({ isVisible, onClose, selectedProduct, productId }) {
+export default function CartModal({ isVisible, onClose, selectedProduct, productId, initialSelectedVolume, initialSelectedPrice }) {
   const [selectedVolume, setSelectedVolume] = useState("");
+  const [selectedPrice, setSelectedPrice] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [showVolumeError, setShowVolumeError] = useState(false)
-  const { addToCart, isATCart} = useAddToCart()
-  const { addToCart2, isATCart2} = useAddToCart2()
-  const { user } = useUser()
-  const userId = user?.id
-  const navigate = useNavigate()
+  const [showVolumeError, setShowVolumeError] = useState(false);
+  const { addToCart, isATCart } = useAddToCart();
+  const { addToCart2, isATCart2 } = useAddToCart2();
+  const { user } = useUser();
+  const userId = user?.id;
+  const navigate = useNavigate();
 
   useEffect(() => {
     if (isVisible) {
       document.body.classList.add("no-scroll");
     } else {
       document.body.classList.remove("no-scroll");
-  }
+    }
 
     return () => document.body.classList.remove("no-scroll");
   }, [isVisible]);
 
-
   const {
     name,
-    price,
+    price = 0,
     image_url: images = [],
-    discount,
+    discount = 0,
     size,
     available
-  } = selectedProduct;
+  } = selectedProduct || {};
 
-  const volumeSize = Array.isArray(size) ? size : [size];
+  const normalizedSizes = React.useMemo(() => {
+    let raw = size;
+    if (typeof raw === "string") {
+      try {
+        raw = JSON.parse(raw);
+      } catch {
+        raw = [raw];
+      }
+    }
+    if (!Array.isArray(raw)) raw = raw ? [raw] : [];
+
+    return raw.map((item) => {
+      if (typeof item === "object" && item !== null && item.size) {
+        return {
+          size: String(item.size),
+          price: Number(item.price) || Number(price) || 5000,
+        };
+      }
+      const label = String(item).includes("ml") || String(item).includes("g") ? String(item) : `${item}ml`;
+      return {
+        size: label,
+        price: Number(price) || 5000,
+      };
+    });
+  }, [size, price]);
+
+  useEffect(() => {
+    if (isVisible) {
+      if (initialSelectedVolume) {
+        setSelectedVolume(initialSelectedVolume);
+        setSelectedPrice(initialSelectedPrice || price);
+      } else if (normalizedSizes.length > 0) {
+        setSelectedVolume(normalizedSizes[0].size);
+        setSelectedPrice(normalizedSizes[0].price);
+      }
+    }
+  }, [isVisible, initialSelectedVolume, initialSelectedPrice, normalizedSizes, price]);
+
+  const activePrice = selectedPrice || price;
 
   function onAddToCart(){
     if (!selectedVolume){ 
-      setShowVolumeError(true)  
-      return 
-    } else {
-      addToCart(
-        {productId, userId, quantity, selectedVolume},
-        {onSettled: () => onClose()}
-      )
+      setShowVolumeError(true);  
+      return; 
     }
+    addToCart(
+      { productId, userId, quantity, selectedVolume, selectedPrice: activePrice },
+      { onSettled: () => onClose() }
+    );
     setShowVolumeError(false);
   }
 
-  function onBuyNow(e){
+  function onBuyNow(){
     if (!selectedVolume) {
       setShowVolumeError(true); 
-      return
-    } else {
-      addToCart2(
-        {productId, userId, quantity, selectedVolume},
-        {onSuccess: () => navigate("/cart") }
-      )
+      return;
     }
+    addToCart2(
+      { productId, userId, quantity, selectedVolume, selectedPrice: activePrice },
+      { onSuccess: () => navigate("/cart") }
+    );
   }
-
-  // console.log("price", price)
-  // console.log("discount", discount)
-  // console.log("selectedVolume", selectedVolume)
-  // console.log("first value of sizes", volumeSize[0])
-
-  // const mainPrice = (price/volumeSize[0]) * selectedVolume
-  // console.log("mainprice", mainPrice)
 
   return (
     <>
-
     <ModalBackdrop isVisible={isVisible}>
       <ModalContainer>
         <ModalBody>
-          <CloseButton onClick={onClose} /> {/* Use the CloseButton here */}
-          <Img src={images[1]} />
+          <CloseButton onClick={onClose} />
+          <Img src={images[0] || images[1]} alt={name} />
           <ModalContent>
             <Middle>
                 <h2>{name}</h2>
-                <Price price={price} discount={discount} />
+                <Price price={activePrice} discount={discount} />
                 <div>
-                <h3>Select Size</h3>
+                <h3 style={{ fontSize: "1rem", margin: "10px 0 6px" }}>Select Size & Variant</h3>
                   <VolumeOptionsContainer isATCart={isATCart}>
-                    {volumeSize.length > 0 &&
-                      volumeSize.map((volume, i) => (
+                    {normalizedSizes.length > 0 &&
+                      normalizedSizes.map((variant, i) => (
                         <VolumeOption
                           key={i}
-                          className={selectedVolume === volume ? 'selected' : ''}
+                          className={selectedVolume === variant.size ? 'selected' : ''}
                           onClick={() => {
-                            setSelectedVolume(volume)
-                            setShowVolumeError(false)
+                            setSelectedVolume(variant.size);
+                            setSelectedPrice(variant.price);
+                            setShowVolumeError(false);
                           }}
                           isATCart={isATCart}
                         >
-                          {volume}ml
+                          <span style={{ fontWeight: 600 }}>{variant.size}</span>
+                          {variant.price && (
+                            <span style={{ fontSize: "0.8rem", color: "#7c2d12", opacity: 0.9 }}>
+                              ₦{variant.price.toLocaleString()}
+                            </span>
+                          )}
                         </VolumeOption>
                       ))
                     }
                   </VolumeOptionsContainer>
-                  {showVolumeError && <p style={{ color: "red" }}>Please select a volume size</p>}
+                  {showVolumeError && <p style={{ color: "red", fontSize: "0.88rem" }}>Please select a volume size</p>}
                 </div>
                 <div>
-                  <h3>Quantity</h3>
-                  <QuantityCounter  available={available} setQuantity={setQuantity} isATCart={isATCart}/>
+                  <h3 style={{ fontSize: "1rem", margin: "10px 0 6px" }}>Quantity</h3>
+                  <QuantityCounter available={available} setQuantity={setQuantity} isATCart={isATCart}/>
                 </div>
             </Middle>
             <Lower>
@@ -242,23 +275,28 @@ const VolumeOptionsContainer = styled.div`
 
 const VolumeOption = styled.div`
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px;
-  border: 1px solid rgb(222, 224, 225);
-  background-color: ${({ isATCart }) => (isATCart ? "rgba(116, 116, 116, 0.79)" : "rgb(232, 233, 235)" )};
+  gap: 2px;
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: 2px solid rgb(222, 224, 225);
+  background-color: ${({ isATCart }) => (isATCart ? "rgba(116, 116, 116, 0.2)" : "var(--color-grey-50, #f9fafb)" )};
   cursor: pointer;
   pointer-events: ${({ isATCart }) => (isATCart ? "none" : "auto")};
-  transition: background-color 0.3s, border-color 0.3s;
+  transition: all 0.2s ease;
+  min-width: 70px;
 
   &:hover {
-    background-color: ${({ isATCart }) => (isATCart && "rgb(232, 233, 235)")};
+    border-color: #7c2d12;
   }
 
   &.selected {
-    border-color: rgb(245, 148, 92); 
+    border-color: #7c2d12;
+    background-color: #fef3c7;
+    box-shadow: 0 2px 6px rgba(124, 45, 18, 0.15);
   }
-  
 `;
 
 const Middle = styled.div`
@@ -283,9 +321,3 @@ const Lower = styled.div`
     }
   }
 `;
-
-const StyledNavLink = styled(NavLink)`
-  @media (min-width: 1024px){
-    width: 100%; 
-  }
-`

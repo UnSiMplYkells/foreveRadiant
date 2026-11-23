@@ -1,101 +1,146 @@
-import { NavLink } from "react-router-dom";
-import { IoIosHome } from "react-icons/io"
-import { MdCollections } from "react-icons/md"
+import { NavLink, useLocation } from "react-router-dom";
+import { useUser } from "../Features/Authentication/useUser";
+import { IoIosHome } from "react-icons/io";
+import { MdCollections, MdOutlineReceiptLong } from "react-icons/md";
 import { FaCircleInfo } from "react-icons/fa6";
+import { HiOutlinePhone } from "react-icons/hi2";
 import styled from "styled-components";
 
-
-
-const StyledNavLink = styled(NavLink)`
-  font-size: clamp(1rem, 2vw + 1px, 2.2rem);
-  white-space: nowrap;
-
-  &:link,
-  &:visited {
-    color: var(--color-grey-700);
-    padding: clamp(0.8rem, 1.5vw, 1.2rem) clamp(1rem, 3vw, 2.4rem);
-    transition: all 0.3s;
-    border-radius: var(--border-radius-sm);
-    width: fit-content;
-  }
-
-  /* This works because react-router places the active class on the active NavLink */
-  &:hover,
-  &:active,
-  &.active:link,
-  &.active:visited {
-    color: var(--color-brown);
-    background-color: var(--color-grey-300);
-  }
-
-  & svg {
-    width: clamp(1.2rem, 4vw, 2.4rem);
-    height: clamp(1.2rem, 4vw, 2.4rem);
-    color: var(--color-grey-700);
-    transition: all 0.3s;
-
-    /*to position the svg well*/
-    position: relative; 
-    top: clamp(0.2rem, 1vw, 0.5rem);
-    left: clamp(0.4rem, 1.5vw, 1rem);
-    
-  }
-
-  &:hover svg,
-  &:active svg,
-  &.active:link svg,
-  &.active:visited svg {
-    color: var(--color-brown);
-  }
-
-    @media (width < 750px) {
-      &:hover,
-      &:active,
-      &.active:link,
-      &.active:visited {
-        color: var(--color-brown);
-        background-color: white;
-      }
-
-      & svg{
-        display: none;
-      }
-    }
-    
-    @media (min-width: 1024px) and (max-width: 1240px){
-      & svg{
-        display: none;
-      }
-    }
+const StyledNav = styled.nav`
+  display: flex;
+  align-items: center;
 `;
 
 const StyledUl = styled.ul`
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 1.5rem;
-  flex-wrap: nowrap; /* Prevent wrapping */
+  gap: clamp(0.4rem, 1vw, 1.2rem);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex-wrap: nowrap;
+`;
+
+const StyledNavLink = styled(NavLink)`
+  font-size: clamp(1.2rem, 1.1vw, 1.5rem);
+  font-weight: 500;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  color: var(--text-secondary);
+  padding: 0.7rem clamp(0.6rem, 1vw, 1.4rem);
+  border-radius: var(--border-radius-sm, 8px);
+  transition: all 0.2s ease;
+
+  &:link,
+  &:visited {
+    color: var(--text-secondary);
+  }
+
+  &:hover,
+  &:active,
+  &.active:link,
+  &.active:visited {
+    color: var(--color-brown, #d97706);
+    background-color: var(--bg-surface-soft, rgba(217, 119, 6, 0.08));
+  }
+
+  & svg {
+    font-size: clamp(1.4rem, 1.3vw, 1.8rem);
+    color: inherit;
+    transition: transform 0.2s ease, color 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  &:hover svg,
+  &.active svg {
+    transform: translateY(-1px);
+    color: var(--color-brown, #d97706);
+  }
+
+  @media (max-width: 900px) {
+    padding: 0.6rem 0.8rem;
+    font-size: 1.2rem;
+
+    & svg {
+      display: none;
+    }
+  }
+
+  @media (max-width: 500px) {
+    padding: 0.5rem 0.6rem;
+    font-size: 1.1rem;
+  }
 `;
 
 export default function MainNav() {
+  const { isAuthenticated } = useUser();
+  const location = useLocation();
+
+  function handleContactClick(e) {
+    const el = document.getElementById("contact");
+    if (el) {
+      e.preventDefault();
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  }
+
   return (
-    <nav>
+    <StyledNav aria-label="Main Navigation">
       <StyledUl>
-        <li>
-          <StyledNavLink to="/home">
-            <span>Home</span>
-            <IoIosHome />
-          </StyledNavLink>
-          <StyledNavLink to="/collection">
-            <span>Collections</span>
-            <MdCollections />
-          </StyledNavLink>
-          <StyledNavLink to="/about">
-            <span>About us</span> 
-            <FaCircleInfo />
-          </StyledNavLink>
-        </li>
+        {/* UNAUTHENTICATED (MARKETING) NAVIGATION */}
+        {!isAuthenticated && (
+          <>
+            <li>
+              <StyledNavLink to="/home">
+                <span>Home</span>
+                <IoIosHome />
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/about">
+                <span>About Us</span>
+                <FaCircleInfo />
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink
+                to={location.pathname === "/home" ? "#contact" : "/home#contact"}
+                onClick={handleContactClick}
+              >
+                <span>Contact Us</span>
+                <HiOutlinePhone />
+              </StyledNavLink>
+            </li>
+          </>
+        )}
+
+        {/* AUTHENTICATED (STOREFRONT) NAVIGATION */}
+        {isAuthenticated && (
+          <>
+            <li>
+              <StyledNavLink to="/home">
+                <span>Home</span>
+                <IoIosHome />
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/collection">
+                <span>Collection</span>
+                <MdCollections />
+              </StyledNavLink>
+            </li>
+            <li>
+              <StyledNavLink to="/order">
+                <span>Orders</span>
+                <MdOutlineReceiptLong />
+              </StyledNavLink>
+            </li>
+          </>
+        )}
       </StyledUl>
-    </nav>
-  )
+    </StyledNav>
+  );
 }

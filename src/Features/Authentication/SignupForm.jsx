@@ -1,231 +1,344 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import styled from "styled-components";
-import Button from "../../ui/Button";
+import { Link } from "react-router-dom";
+import {
+  HiOutlineUser,
+  HiOutlineMail,
+  HiOutlineEye,
+  HiOutlineEyeOff,
+  HiOutlineCheck,
+} from "react-icons/hi";
+import { useSignup } from "./useSignup";
+import { userRegistrationSchema } from "../../Validation/schemas";
 import CustomInput from "../../ui/CustomInput";
 import AlternateLogin from "../../ui/AlternateLogin";
 import MiniLoader from "../../ui/MiniLoader";
-import { useSignup } from "./useSignup";
 
+const Form = styled.form`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+`;
+
+const FormHeader = styled.div`
+  text-align: center;
+  margin-bottom: 2rem;
+
+  h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-grey-900);
+    letter-spacing: -0.02em;
+    margin-bottom: 0.6rem;
+  }
+
+  p {
+    font-size: 1.4rem;
+    color: var(--color-grey-500);
+  }
+`;
+
+const PasswordStrengthContainer = styled.div`
+  margin-top: 0.8rem;
+  margin-bottom: 0.4rem;
+
+  .bar-row {
+    display: flex;
+    gap: 0.4rem;
+    height: 4px;
+    margin-bottom: 0.4rem;
+  }
+
+  .segment {
+    flex: 1;
+    border-radius: 999px;
+    background-color: var(--color-grey-200);
+    transition: background-color 0.25s ease;
+  }
+
+  .text {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: ${(props) => props.strengthColor || "var(--color-grey-400)"};
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+`;
+
+const CheckboxRow = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 1.8rem;
+  margin-bottom: 2.4rem;
+
+  input[type="checkbox"] {
+    accent-color: #d97706;
+    width: 1.8rem;
+    height: 1.8rem;
+    margin-top: 0.2rem;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  label {
+    font-size: 1.3rem;
+    color: var(--color-grey-600);
+    line-height: 1.4;
+    cursor: pointer;
+    user-select: none;
+
+    a {
+      color: #d97706;
+      font-weight: 600;
+      text-decoration: underline;
+
+      &:hover {
+        color: #b45309;
+      }
+    }
+  }
+`;
+
+const SubmitButton = styled.button`
+  width: 100%;
+  padding: 1.4rem;
+  background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.3);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 4.8rem;
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(217, 119, 6, 0.4);
+  }
+
+  &:disabled {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+  }
+`;
+
+const SwitchTabRow = styled.p`
+  text-align: center;
+  font-size: 1.3rem;
+  color: var(--color-grey-600);
+  margin-top: 1.8rem;
+
+  button {
+    background: transparent;
+    border: none;
+    color: #d97706;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 0.4rem;
+
+    &:hover {
+      color: #b45309;
+    }
+  }
+`;
+
+function calculateStrength(pwd = "") {
+  if (!pwd) return { score: 0, label: "", color: "" };
+  let score = 0;
+  if (pwd.length >= 6) score += 1;
+  if (pwd.length >= 10) score += 1;
+  if (/[A-Z]/.test(pwd)) score += 1;
+  if (/[0-9]/.test(pwd) || /[^A-Za-z0-9]/.test(pwd)) score += 1;
+
+  if (score <= 1) return { score: 1, label: "Weak password", color: "#ef4444" };
+  if (score <= 2) return { score: 2, label: "Fair password", color: "#f59e0b" };
+  if (score === 3) return { score: 3, label: "Good password", color: "#10b981" };
+  return { score: 4, label: "Strong & secure password", color: "#059669" };
+}
 
 export default function SignupForm({ setActiveTab }) {
-  const { signup, isLoading } = useSignup(setActiveTab)
-  const { register, handleSubmit,  formState: { errors }, reset } = useForm()
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(true);
+  const [termsError, setTermsError] = useState("");
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
+  const { signup, isLoading } = useSignup(setActiveTab);
 
-  function handlePasswordChange(e) {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    validatePasswords(newPassword, confirmPassword);
-  }
+  const {
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(userRegistrationSchema),
+    defaultValues: {
+      fullName: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+  });
 
-  function handleConfirmPasswordChange(e) {
-    const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
-    validatePasswords(password, newConfirmPassword);
-  }
+  const watchedPassword = watch("password", "");
+  const strength = calculateStrength(watchedPassword);
 
-  function validatePasswords(pass, confirmPass) {
-    if (confirmPass.length > 0 && pass !== confirmPass) {
-      setError("Passwords do not match!");
-    } else {
-      setError(""); // Clear error when they match
-    }
-  }
-
-  function onSubmitForm({email, fullName, password, confirmPassword}) {
-    if (password !== confirmPassword) {
-      setError("Passwords do not match!");
+  function onSubmit(data) {
+    if (!acceptedTerms) {
+      setTermsError("Please agree to our Terms and Privacy Policy to continue");
       return;
     }
+    setTermsError("");
 
-    if (password.length < 8) {
-      return;
-    }
-
-    signup(
-      { email, fullName, password },
-      {
-        onSettled: () => {
-          reset()
-        },
-        onError: (error) => {
-          console.error("Signup error:", error);
-          toast.error(error.message);
-        }
-      }
-    )
+    signup({
+      fullName: data.fullName,
+      email: data.email,
+      password: data.password,
+    });
   }
 
   return (
-    <Container>
-      <Header>Register</Header>
-      <form onSubmit={handleSubmit(onSubmitForm)}>
-        <Avatar>
-          <ImgWrapper>
-            <Img src="/Images/dog-img.jpg" alt="avatar"/>
-            {isLoading && <DisabledOverlay />}
-          </ImgWrapper>
-          <Upload disabled={isLoading}>Upload Image(not yet implemented)</Upload>
-        </Avatar>
+    <Form onSubmit={handleSubmit(onSubmit)}>
+      <FormHeader>
+        <h2>Create Account</h2>
+        <p>Unlock personalized formulas, order tracking, and exclusive previews</p>
+      </FormHeader>
 
-        <>
-          <CustomInput 
-            type="text" 
-            id="email"
-            disabled={isLoading}
-            {...register("email", { pattern:
-              { value: /\S+@\S+\.\S+/,
-                message: "Please provide a valid email address"
-              }
-              }
-            )}
+      <CustomInput
+        id="signup-fullName"
+        type="text"
+        label="Full Name"
+        placeholder="e.g., Amara Johnson"
+        disabled={isLoading}
+        error={errors.fullName?.message}
+        {...register("fullName")}
+        actionSlot={<HiOutlineUser />}
+      />
+
+      <CustomInput
+        id="signup-email"
+        type="email"
+        label="Email Address"
+        placeholder="amara@example.com"
+        disabled={isLoading}
+        error={errors.email?.message}
+        {...register("email")}
+        actionSlot={<HiOutlineMail />}
+      />
+
+      <CustomInput
+        id="signup-password"
+        type={showPassword ? "text" : "password"}
+        label="Password (min 6 characters)"
+        placeholder="Create a strong password"
+        disabled={isLoading}
+        error={errors.password?.message}
+        {...register("password")}
+        actionSlot={
+          <span
+            onClick={() => setShowPassword((prev) => !prev)}
+            role="button"
+            tabIndex={0}
+            aria-label={showPassword ? "Hide password" : "Show password"}
           >
-            Email address*
-          </CustomInput>
-          {errors.email && <p style={{ color: "red", fontSize: "12px" }}>{errors?.email?.message}</p>}
-        </>
+            {showPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
+          </span>
+        }
+      />
 
-        <CustomInput 
-          type="text" 
-          id="fullName"
-          disabled={isLoading} 
-          {...register("fullName")}
+      {/* PASSWORD STRENGTH VISUALIZER */}
+      {watchedPassword && (
+        <PasswordStrengthContainer strengthColor={strength.color}>
+          <div className="bar-row">
+            {[1, 2, 3, 4].map((idx) => (
+              <div
+                key={idx}
+                className="segment"
+                style={{
+                  backgroundColor:
+                    idx <= strength.score ? strength.color : undefined,
+                }}
+              />
+            ))}
+          </div>
+          <div className="text">
+            {strength.score >= 3 && <HiOutlineCheck />} {strength.label}
+          </div>
+        </PasswordStrengthContainer>
+      )}
+
+      <CustomInput
+        id="signup-confirmPassword"
+        type={showConfirmPassword ? "text" : "password"}
+        label="Confirm Password"
+        placeholder="Re-enter your password"
+        disabled={isLoading}
+        error={errors.confirmPassword?.message}
+        {...register("confirmPassword")}
+        actionSlot={
+          <span
+            onClick={() => setShowConfirmPassword((prev) => !prev)}
+            role="button"
+            tabIndex={0}
+            aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+          >
+            {showConfirmPassword ? <HiOutlineEyeOff /> : <HiOutlineEye />}
+          </span>
+        }
+      />
+
+      <CheckboxRow>
+        <input
+          type="checkbox"
+          id="termsCheckbox"
+          checked={acceptedTerms}
+          onChange={(e) => {
+            setAcceptedTerms(e.target.checked);
+            if (e.target.checked) setTermsError("");
+          }}
+          disabled={isLoading}
+        />
+        <label htmlFor="termsCheckbox">
+          I agree to the{" "}
+          <Link to="/privacypolicy" target="_blank">
+            Terms of Service
+          </Link>{" "}
+          and acknowledge the Botanical Purity & Privacy commitment.
+        </label>
+      </CheckboxRow>
+      {termsError && (
+        <p style={{ color: "#ef4444", fontSize: "1.2rem", marginTop: "-1.8rem", marginBottom: "1.8rem" }}>
+          {termsError}
+        </p>
+      )}
+
+      <SubmitButton type="submit" disabled={isLoading}>
+        {isLoading ? <MiniLoader /> : "Create Radiant Account"}
+      </SubmitButton>
+
+      <SwitchTabRow>
+        Already have an account?
+        <button
+          type="button"
+          onClick={() => setActiveTab && setActiveTab("login")}
         >
-          Fullname*
-        </CustomInput>
+          Sign In
+        </button>
+      </SwitchTabRow>
 
-        <>
-          <CustomInput 
-            type="password" 
-            id="password"
-            disabled={isLoading} 
-            {...register("password", {
-              onChange: (e) => handlePasswordChange(e),
-              minLength:{
-                value: 8,
-                message: "Password needs a minimum of 8 characters"
-              }
-            })}
-          >
-            Password*
-          </CustomInput>
-          { password.length < 8 && <p style={{ color: "rgb(238, 16, 16)", fontSize: "10px" }}>Minimum 8 characters</p>}
-
-          <CustomInput 
-            type="password" 
-            id="confirmedPassword"
-            disabled={isLoading} 
-            {...register("confirmPassword", { onChange: (e) => handleConfirmPasswordChange(e),})}
-          >
-            Confirm Password
-          </CustomInput>
-          {error && <p style={{ color: "red", marginTop: "5px" }}>{error}</p>}
-        </>
-        <T_C>
-          <CustomInput type="checkbox" disabled={isLoading}/>
-          <p><i>By clicking, you agree to our Terms and Conditions.</i></p>
-        </T_C>
-        
-        <StyledButton size="large" variation="cart" disabled={isLoading}>{isLoading ? <MiniLoader /> : " SIGN UP"}</StyledButton>
-
-      </form>
-      <hr />
-      <AlternateLogin type="signup"/>
-    </Container>
-  )
-};
-
-const Container = styled.div`
-  max-width: 60%;
-  margin: auto;
-
-  @media (max-width: 620px) {
-    max-width: 80%;
-  }
-`
-
-const Header = styled.p`
-  text-transform: uppercase;
-  text-align: center;
-  font-weight: bold;
-  padding-top: 20px;
-
-  @media (max-width: 820px){
-    font-size: 1.5em; 
-  }
-
-  @media (min-width: 820px){
-    font-size: 2em; 
-  padding-top: 0;
-  }
-`;
-
-const Avatar = styled.div`
-  width: fit-content;
-  margin: 15px auto 30px;
-
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-`
-
-const Img = styled.img`
-  border-radius: 100%;
-
-  @media (max-width: 500px){
-    width: 90px;
-  } 
-
-  @media (min-width: 500px){
-    width: 120px;
-  } 
-`
-
-const ImgWrapper = styled.div`
-  position: relative;
-  display: inline-block;
-`;
-
-const DisabledOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  background-color: rgba(200, 200, 200, 0.5); /* Grayish overlay */
-  cursor: not-allowed;
-  border-radius: 100%; /* Adjust if image is not circular */
-
-  @media (max-width: 500px){
-    width: 90px;
-    height: 90px;
-  } 
-
-  @media (min-width: 500px){
-    width: 120px;
-    height: 120px;
-  } 
-`;
-
-const Upload = styled.button`
-  padding: 2px; 
-  cursor: pointer;
-  background-color: transparent;
-`
-
-const StyledButton = styled(Button)`
-  width: 100%;
-  margin: 30px 0; 
-  position: relative;
-  z-index: 2;
-`
-
-const T_C = styled.div`
-  display: flex;
-  align-items: end;
-  gap: 10px;
-  font-size: 1.2rem;
-
-`
+      <AlternateLogin type="signup" />
+    </Form>
+  );
+}

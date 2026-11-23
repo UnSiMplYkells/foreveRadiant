@@ -1,179 +1,306 @@
-import React from "react";
 import styled from "styled-components";
+import { Link } from "react-router-dom";
+import { 
+  HiOutlineSparkles, 
+  HiOutlineCheckBadge, 
+  HiOutlineUserGroup,
+  HiOutlineHeart,
+  HiOutlineArrowRight
+} from "react-icons/hi2";
 
 const AboutUsContainer = styled.div`
-  padding: 5px;
-  max-width: 1000px;
+  max-width: 1200px;
   margin: 0 auto;
+  padding: 20px 10px 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 60px;
 `;
 
-const Title = styled.h2`
-  font-weight: 500;
+const PageTitle = styled.h2`
+  font-weight: 700;
   text-transform: uppercase;
-  padding-bottom: 2rem;
+  font-size: 2rem;
+  letter-spacing: 1px;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
 
   span {
-    font-weight: 700;
+    color: var(--color-brown);
   }
 `;
 
-const HeroImage = styled.img`
-  width: 100%;
-  height: auto;
-  margin-bottom: 20px;
+const StorySection = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 50px;
+  align-items: center;
 
-  @media (min-width: 600px)  and (max-width: 940px){
-    width: 60%;
-    height: 500px;
-  }
-
-  @media (min-width: 940px){
-    width: 40%;
-  }
-`;
-
-const ImageSection = styled.div`
-  @media (min-width: 600px){
-    display: flex;
+  @media (max-width: 868px) {
+    grid-template-columns: 1fr;
     gap: 30px;
-    margin-bottom: 20px; 
   }
 `;
 
-const DiffSection = styled.div`
-  margin-top: 20px;
+const StoryImageContainer = styled.div`
+  position: relative;
+  width: 100%;
 
-  @media (min-width: 600px) and (max-width: 940px) {
-    width: 40%;
-  }
+  img {
+    width: 100%;
+    height: 480px;
+    object-fit: cover;
+    border-radius: 16px;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--border-color);
 
-  @media (min-width: 940px) {
-    width: 60%;
-  }
-`;
-
-const Section = styled.section`
-  margin-bottom: 3rem;
-
-  @media (max-width: 768px) {
-    margin-bottom: 2rem;
+    @media (max-width: 768px) {
+      height: 340px;
+    }
   }
 `;
 
-const Mission = styled.h4`
-  margin-bottom: 5px;
-`;
-
-const Paragraph = styled.p`
-  margin-bottom: 1.5rem;
-  font-size: 1.2rem;
-`;
-
-const WhyChooseUs = styled.div`
+const StoryContent = styled.div`
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
+  gap: 18px;
 
-
-
-  @media (max-width: 600px) {
-    flex-direction: column;
-
-    border-bottom: 1px solid red;
-    border-left: 1px solid red;
-    border-right: 1px solid red;
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.3;
   }
 
-    @media (min-width: 600px) {
-      flex-direction: row;
-
-      border-top: 1px solid red;
-      border-bottom: 1px solid red;
-      border-left: 1px solid red;
+  p {
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--text-secondary);
+    margin: 0;
   }
 `;
 
-const Reason = styled.div`
-  flex: 1;
-  padding: 20px;
-  
+const ValuesSection = styled.section`
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+`;
 
-  @media (max-width: 600px) {
-    border-top: 1px solid red;
+const ValuesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+`;
+
+const ValueCard = styled.div`
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 30px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.25s ease;
+
+  &:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-brown);
+    box-shadow: var(--shadow-md);
   }
 
-  @media (min-width: 600px) {
-    border-right: 1px solid red;
+  .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background-color: var(--bg-surface-soft);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-brown);
+    font-size: 1.7rem;
+    border: 1px solid var(--border-color);
+  }
+
+  h4 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin: 0;
+  }
+
+  p {
+    font-size: 0.95rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin: 0;
   }
 `;
 
-const ReasonTitle = styled.h3`
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
+const MissionBanner = styled.div`
+  background: linear-gradient(135deg, var(--bg-surface-soft) 0%, var(--bg-surface) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  padding: 40px clamp(20px, 4vw, 50px);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: center;
+  align-items: center;
 
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
+  h3 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--color-brown);
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  p {
+    max-width: 760px;
+    font-size: 1.15rem;
+    line-height: 1.7;
+    color: var(--text-primary);
+    margin: 0;
   }
 `;
 
-const ReasonText = styled.p`
-  font-size: 1rem;
-  line-height: 1.5;
+const CtaSection = styled.div`
+  text-align: center;
+  padding: 40px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+
+  h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  p {
+    font-size: 1rem;
+    color: var(--text-secondary);
+    max-width: 500px;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--color-brown);
+    color: white !important;
+    font-weight: 700;
+    padding: 14px 32px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-size: 0.95rem;
+    transition: all 0.25s ease;
+
+    &:hover {
+      background-color: var(--color-brown-hover);
+      transform: translateY(-2px);
+    }
+  }
 `;
 
-function AboutUs() {
+export default function AboutUs() {
   return (
     <AboutUsContainer>
-      <Title>ABOUT <span>US_</span></Title>
+      <PageTitle>
+        ABOUT <span>US_</span>
+      </PageTitle>
 
-      <ImageSection>
-        <HeroImage
-          src="/Images/dog-img.jpg" // Path to your hero image
-          alt="About Us Hero"
-        />
-        <DiffSection>
-          <Section>
-            <Paragraph>
-              Forever was born out of a passion for innovation and a desire to revolutionize the way people shop online. Our journey began with a simple idea: to provide a platform where customers can easily discover, explore, and purchase a wide range of products from the comfort of their homes.
-            </Paragraph>
-            <Paragraph>
-              Since our inception, we’ve worked tirelessly to curate a diverse selection of high-quality products that cater to every taste and preference. From fashion and beauty to electronics and home essentials, we offer an extensive collection sourced from trusted brands and suppliers.
-            </Paragraph>
-          </Section>
+      {/* STORY SECTION */}
+      <StorySection>
+        <StoryImageContainer>
+          <img
+            src="/Images/ui/founder-story.jpg"
+            alt="Forever Radiant Botanical Founder & Laboratory"
+          />
+        </StoryImageContainer>
 
-          <Section>
-            <Mission>Our Mission:</Mission>
-            <Paragraph>
-              Our mission at Forever is to empower customers with choice, convenience, and confidence. We’re dedicated to providing a seamless shopping experience that exceeds expectations, from browsing and ordering to delivery and beyond.
-            </Paragraph>
-          </Section>
-        </DiffSection>
-      </ImageSection>
+        <StoryContent>
+          <h3>Purity In Every Drop. Radiance In Every Touch.</h3>
+          <p>
+            Forever Radiant was founded on a simple truth: nature and modern dermatology are not opposites, but the ultimate collaborators. Our journey began with the ambition to craft honest, transparent elixirs free from harsh industrial fillers, silicones, and parabens.
+          </p>
+          <p>
+            Every formula in our collection is curated in small, intentional batches using cold-pressed African seed oils, pure aloe vera extracts, and clinical botanical actives. We test tirelessly for efficacy and texture so your morning and evening rituals feel like pure sanctuary.
+          </p>
+          <p>
+            From our artisan headquarters to your dressing table, we ensure sustainable packaging, fair-trade raw material sourcing, and dermatologist-tested purity.
+          </p>
+        </StoryContent>
+      </StorySection>
 
-      <Section>
-        <Title>WHY <span>CHOOSE US_</span></Title>
-        <WhyChooseUs>
-          <Reason>
-            <ReasonTitle>Quality Assurance:</ReasonTitle>
-            <ReasonText>
-              We meticulously select and vet each product to ensure it meets our stringent quality standards.
-            </ReasonText>
-          </Reason>
-          <Reason>
-            <ReasonTitle>Convenience:</ReasonTitle>
-            <ReasonText>
-              With our user-friendly interface and hassle-free ordering process, shopping has never been easier.
-            </ReasonText>
-          </Reason>
-          <Reason>
-            <ReasonTitle>Exceptional Customer Service:</ReasonTitle>
-            <ReasonText>
-              Our team of dedicated professionals is here to assist you every step of the way, ensuring your satisfaction is our top priority.
-            </ReasonText>
-          </Reason>
-        </WhyChooseUs>
-      </Section>
+      {/* MISSION BANNER */}
+      <MissionBanner>
+        <h3>Our Core Purpose</h3>
+        <p>
+          "To elevate daily self-care rituals through potent, clean botanical formulations that celebrate and nurture the natural radiance of every skin tone and hair texture."
+        </p>
+      </MissionBanner>
+
+      {/* VALUES / WHY CHOOSE US */}
+      <ValuesSection>
+        <PageTitle>
+          WHY <span>CHOOSE US_</span>
+        </PageTitle>
+
+        <ValuesGrid>
+          <ValueCard>
+            <div className="icon">
+              <HiOutlineSparkles />
+            </div>
+            <h4>Artisanal Integrity</h4>
+            <p>
+              Small-batch formulated to guarantee ingredient freshness and maximum potency in every bottle.
+            </p>
+          </ValueCard>
+
+          <ValueCard>
+            <div className="icon">
+              <HiOutlineCheckBadge />
+            </div>
+            <h4>Dermatologically Proven</h4>
+            <p>
+              Non-comedogenic, pH-balanced formulas designed specifically to soothe and nourish sensitive skin types.
+            </p>
+          </ValueCard>
+
+          <ValueCard>
+            <div className="icon">
+              <HiOutlineUserGroup />
+            </div>
+            <h4>Customer Centricity</h4>
+            <p>
+              Dedicated direct support, seamless checkout with concurrency protection, and rapid door-to-door delivery.
+            </p>
+          </ValueCard>
+
+          <ValueCard>
+            <div className="icon">
+              <HiOutlineHeart />
+            </div>
+            <h4>100% Cruelty Free</h4>
+            <p>
+              Zero animal testing, ethically sourced botanical extracts, and sustainable recyclable packaging.
+            </p>
+          </ValueCard>
+        </ValuesGrid>
+      </ValuesSection>
+
+      {/* CTA SECTION */}
+      <CtaSection>
+        <h3>Ready to Transform Your Ritual?</h3>
+        <p>Explore our carefully crafted skincare and haircare collections.</p>
+        <Link to="/collection">
+          Explore The Collection <HiOutlineArrowRight />
+        </Link>
+      </CtaSection>
     </AboutUsContainer>
   );
 }
-
-export default AboutUs;

@@ -1,114 +1,132 @@
 import styled from "styled-components";
 import { Link } from "react-router-dom";
-import { FaInstagram } from "react-icons/fa6";
-import { FaTiktok } from "react-icons/fa";
-import { FaTwitter } from "react-icons/fa";
+import { FaInstagram, FaTiktok, FaXTwitter } from "react-icons/fa6";
 
 const FooterWrapper = styled.footer`
   width: 100%;
-  background-color: rgb(248, 248, 248);
-  border-top: 5px  ridge rgb(146, 172, 143);
-  font-size: 1.2rem;
-`
+  background-color: var(--footer-bg);
+  border-top: 1px solid var(--border-color);
+  font-size: 1.3rem;
+  color: var(--text-secondary);
+  transition: all 0.3s ease;
+`;
 
 const Container = styled.div`
   display: flex;
   justify-content: space-between;
-  padding: 15px 40px;
+  padding: 40px clamp(16px, 4vw, 60px) 30px;
+  max-width: 1400px;
+  margin: 0 auto;
 
-  @media (max-width: 600px){
+  @media (max-width: 768px) {
     flex-direction: column;
-    gap: 20px;
+    gap: 30px;
   }
 
-  li{
-    padding-top: 5px;
+  h3 {
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
   }
 
-  a{
-    color: black;
-  }
-`
-
-const WriteUp = styled.p`
-  max-width: 400px;
-
-  @media (max-width: 600px){
-    width: fit-content;
+  li {
+    padding: 6px 0;
   }
 
-  @media (min-width: 600px) and (max-width: 690px)  {  
-    max-width: 250px;
+  a {
+    color: var(--text-secondary);
+    transition: color 0.2s;
+
+    &:hover {
+      color: var(--color-brown);
+    }
+  }
+`;
+
+const BrandSection = styled.div`
+  max-width: 420px;
+
+  h2 {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--color-brown);
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
   }
 
-  @media (min-width: 690px) and (max-width: 800px) {  
-    max-width: 300px;
+  p {
+    font-size: 1.3rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
   }
-
-  @media (min-width: 1024px) and (max-width: 1300px) {  
-    max-width: 600px;
-  }
-
-  @media (min-width: 1300px){
-    max-width: 800px;
-  }
-`
+`;
 
 const ReachOut = styled.div`
   width: fit-content;
   margin: 0 auto;
-  padding: 15px 0 20px;
+  padding: 10px 0 30px;
+  text-align: center;
 
-  p{
-    font-size: 1.5rem;
-    font-weight: 500;
-    padding: 5px 0 10px;
-    text-align: center
+  p {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--text-primary);
   }
-`
+`;
 
 const SocialHandles = styled.ul`
   display: flex;
-  justify-content: space-evenly;
-  gap: 30px;
-  
-  li{
-    border: 1px solid black;
-    padding: 8px 10px 5px;
-    border-radius: 5px;
-    transition: all 0.5s;
+  justify-content: center;
+  gap: 20px;
+
+  li {
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-surface);
+    padding: 8px 12px;
+    border-radius: 8px;
+    transition: all 0.25s ease;
 
     &:hover {
-      background-color: rgba(223, 223, 223, 0.73);
+      background-color: var(--color-brown);
+      border-color: var(--color-brown);
+      transform: translateY(-2px);
+
+      a {
+        color: white;
+      }
     }
   }
 
-  a{
-    color: black;
+  a {
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
 
-    & svg {
-      width: 35px;
-      height: 35px;
-      transition: all 0.3s;
-    }
-
-    &:hover svg {
-      transform: scale(1.15);
+    svg {
+      width: 22px;
+      height: 22px;
     }
   }
-`
+`;
 
-const Copyright = styled.p`
-  font-size: 13px;
+const Copyright = styled.div`
+  font-size: 1.2rem;
   text-align: center;
-  padding: 8px 0 3px;
-  border-top: 1px solid red; 
-  background-color: rgb(209, 209, 209);
+  padding: 16px 20px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-surface-soft);
+  color: var(--text-muted);
 
-  @media (max-width: 400px){
-    font-size: 11px;
+  span {
+    font-weight: 600;
+    color: var(--color-brown);
   }
-`
+`;
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
@@ -116,34 +134,58 @@ export default function Footer() {
   return (
     <FooterWrapper>
       <Container>
-        <WriteUp>
-          Lorem Ipsum is simply dummy text of the printing and typesetting industry. 
-          Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, 
-          when an unknown printer took a galley of type and scrambled it to make a type 
-          specimen book.
-        </WriteUp>
-        <ul>
-          <h3>COMPANY</h3>
-          <li><Link to="/home">Home</Link></li>
-          <li><Link to="/about">About us</Link></li>
-          <li><a href="/privacyPolicy" target="_blank" rel="noopener noreferrer" >Privacy policy</a></li>
-        </ul>
-        <ul>
-          <h3>CONTACT US @</h3>
-          <li>foreveradiant@gmail.com</li>
-          <li> Kells: +234 705-406-3595</li>
-          <li> Unknown: +234 913-409-3236</li>
-        </ul>
+        <BrandSection>
+          <h2>Forever Radiant</h2>
+          <p>
+            Clean, science-backed formulas crafted with sustainably sourced botanicals.
+            Dedicated to empowering your daily skincare and haircare ritual with timeless luxury.
+          </p>
+        </BrandSection>
+
+        <div>
+          <h3>Quick Links</h3>
+          <ul>
+            <li><Link to="/home">Home</Link></li>
+            <li><Link to="/collection">Collections</Link></li>
+            <li><Link to="/about">About Us</Link></li>
+            <li><Link to="/privacyPolicy">Privacy Policy</Link></li>
+          </ul>
+        </div>
+
+        <div id="contact" style={{ scrollMarginTop: "5rem" }}>
+          <h3>Contact</h3>
+          <ul>
+            <li>foreveradiant@gmail.com</li>
+            <li>Direct: +234 705-406-3595</li>
+            <li>Support: +234 913-409-3236</li>
+          </ul>
+        </div>
       </Container>
+
       <ReachOut>
-        <p>Interact with us on social media:</p>
+        <p>Connect with our community:</p>
         <SocialHandles>
-          <li><a href="https://www.instagram.com/_unsimplykells/?igsh=N3prenlwOWx6NjYw#" target="_blank" rel="noopener noreferrer" ><FaInstagram /></a></li>
-          <li><a href="https://www.tiktok.com/@thehealer800?_t=ZM-8uF22kpQsnl&_r=1" target="_blank" rel="noopener noreferrer" ><FaTiktok /></a></li>
-          <li><a href="https://x.com/theHealer800?t=itn8w0XAWljhKT3eCag4TA&s=09" target="_blank" rel="noopener noreferrer" ><FaTwitter /></a></li>
+          <li>
+            <a href="https://www.instagram.com/_unsimplykells/?igsh=N3prenlwOWx6NjYw#" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <FaInstagram />
+            </a>
+          </li>
+          <li>
+            <a href="https://www.tiktok.com/@thehealer800?_t=ZM-8uF22kpQsnl&_r=1" target="_blank" rel="noopener noreferrer" aria-label="TikTok">
+              <FaTiktok />
+            </a>
+          </li>
+          <li>
+            <a href="https://x.com/theHealer800?t=itn8w0XAWljhKT3eCag4TA&s=09" target="_blank" rel="noopener noreferrer" aria-label="X">
+              <FaXTwitter />
+            </a>
+          </li>
         </SocialHandles>
       </ReachOut>
-      <Copyright>Copyright © {currentYear} @<i>UnSiMplYkells.dev</i> - All Rights Reserved.</Copyright>
+
+      <Copyright>
+        &copy; {currentYear} Forever Radiant Inc. Engineered by <span>UnSiMplYkells.dev</span>. All Rights Reserved.
+      </Copyright>
     </FooterWrapper>
-  )
+  );
 }

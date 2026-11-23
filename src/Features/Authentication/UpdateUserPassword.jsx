@@ -87,15 +87,15 @@ const StyledButton = styled(Button)`
 `;
 
 export default function UpdateUserPassword(){
-  const { register, handleSubmit,  formState: { errors }, reset } = useForm()
+  const { register, handleSubmit, reset } = useForm();
   const { user } = useUser();
 
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const { updateUser, isUpdating } = useUpdateUser()
+  const { updateUser, isUpdating } = useUpdateUser();
 
-  const { logout , isLoading} = useLogout()
+  const { logout } = useLogout();
   
   function handlePasswordChange(e) {
     const newPassword = e.target.value;

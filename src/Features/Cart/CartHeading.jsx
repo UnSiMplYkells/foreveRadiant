@@ -4,6 +4,7 @@ import { useCartItem } from './useCartItems';
 import { useDispatch, useSelector } from 'react-redux';
 import { checkAllItems, clearCheckedItems } from '../../store';
 import { useQueryClient } from '@tanstack/react-query';
+import toast from 'react-hot-toast';
 
 const MenuHeading = styled.h2`
   font-weight: 500;

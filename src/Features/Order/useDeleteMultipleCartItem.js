@@ -1,7 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useUser } from "../Authentication/useUser";
-import { deleteMultipleCartItem as  deleteMultipleCartItemApi} from "../../Services/apiOrder";
-import toast from "react-hot-toast";
+import { deleteMultipleCartItem as deleteMultipleCartItemApi } from "../../Services/apiOrder";
 
 export function useDeleteMultipleCartItem(){
   const queryClient = useQueryClient()

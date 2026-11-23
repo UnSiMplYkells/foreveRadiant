@@ -1,38 +1,43 @@
 import supabase from "./supabase";
 import toast from "react-hot-toast";
 
-export async function addToCart(productId, userId, quantity, selectedVolume) {
+export async function addToCart(productId, userId, quantity, selectedVolume, selectedPrice) {
+  const sizeString = String(selectedVolume || "");
   const { data: existingCartItem, error: fetchError } = await supabase
     .from('cart')
     .select('*')
     .eq('product_id', productId)
     .eq('user_id', userId)
-    .eq('size', selectedVolume)
+    .eq('size', sizeString)
     .single();
 
   if (fetchError && fetchError.code !== 'PGRST116') {
     console.error('Error checking cart:', fetchError);
-    return;
   }
 
   if (existingCartItem) {
-    toast("Product already in cart")
-    return existingCartItem
+    toast("Product already in cart");
+    return existingCartItem;
   }  
   
+  const insertPayload = {
+    product_id: productId,
+    user_id: userId,
+    quantity: quantity,
+    size: sizeString,
+    ...(selectedPrice ? { size_price: Number(selectedPrice) } : {})
+  };
+
   const { data, error } = await supabase
     .from('cart')
-    .insert([
-        { product_id: productId, user_id: userId, quantity: quantity, size: selectedVolume, }
-    ])
+    .insert([insertPayload])
     .select()
-    .single()
+    .single();
   
-    if(error) throw new Error(error.message)
+  if (error) throw new Error(error.message);
 
-  return { newItem: data }
+  return { newItem: data };
 }
-
 
 export async function fetchCartItems(userId) {
   if (!userId) return [];
@@ -41,18 +46,18 @@ export async function fetchCartItems(userId) {
     .from('cart')
     .select('*, products (name, image_url, price, available)')
     .eq('user_id', userId)
-    .order('created_at', { ascending: true })
+    .order('created_at', { ascending: true });
 
   if (error) console.error('Error fetching cart items:', error);
 
-  return data
+  return data;
 }
 
 export async function updateCartQuantity(cartItemId, newQuantity) {
   const { data, error } = await supabase
     .from('cart')
     .update({ quantity: newQuantity })
-    .eq('id', cartItemId) // Assuming 'id' is the unique cart item identifier
+    .eq('id', cartItemId)
     .select()
     .single();
 
@@ -65,8 +70,8 @@ export async function deleteCartItem(userId, cartItemId) {
   const { data: deleteCartItem, error } = await supabase
     .from("cart")
     .delete()
-    .eq("user_id", userId) // Filter by user ID
-    .eq("id", cartItemId) // Filter by product ID
+    .eq("user_id", userId)
+    .eq("id", cartItemId)
     .select();
 
   if (error) throw new Error(error.message);
