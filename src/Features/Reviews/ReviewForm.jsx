@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { FaStar } from "react-icons/fa";
+import { FaStar, FaCheckCircle, FaShieldAlt } from "react-icons/fa";
 import { HiOutlineLockClosed } from "react-icons/hi";
 import { useCreateReview } from "../../Hooks/useReviews";
 import { useUserProfile } from "../../Hooks/useUserProfile";
@@ -182,6 +182,26 @@ const CancelBtn = styled.button`
   }
 `;
 
+const VerifiedHeaderNotice = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 1.8rem;
+  color: #065f46;
+  font-size: 1.25rem;
+  font-weight: 600;
+
+  svg {
+    color: #10b981;
+    font-size: 1.5rem;
+    flex-shrink: 0;
+  }
+`;
+
 const ratingLabels = {
   1: "1 Star - Unsatisfied",
   2: "2 Stars - Fair",
@@ -190,8 +210,13 @@ const ratingLabels = {
   5: "5 Stars - Excellent & Highly Recommended",
 };
 
-export default function ReviewForm({ productId, onCancel, onSuccess }) {
-  const { user, isAuthenticated } = useUserProfile();
+export default function ReviewForm({
+  productId,
+  onCancel,
+  onSuccess,
+  hasPurchased = true,
+}) {
+  const { user, isAdmin, isAuthenticated } = useUserProfile();
   const { submitReview, isSubmitting } = useCreateReview(productId);
 
   const initialName = user?.user_metadata?.fullName || user?.email?.split("@")[0] || "";
@@ -232,6 +257,41 @@ export default function ReviewForm({ productId, onCancel, onSuccess }) {
     );
   }
 
+  // Guardrail: Customer must have purchased the product
+  if (!hasPurchased && !isAdmin) {
+    return (
+      <FormContainer as="div" style={{ textAlign: "center", padding: "3rem" }}>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1rem" }}>
+          <FaShieldAlt style={{ fontSize: "3rem", color: "#d97706" }} />
+        </div>
+        <FormTitle>Verified Purchase Required</FormTitle>
+        <Subtitle>
+          Only customers who have ordered and received this botanical formula can share a review.
+        </Subtitle>
+        <button
+          type="button"
+          onClick={() => {
+            if (onCancel) onCancel();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          style={{
+            background: "linear-gradient(135deg, #d97706 0%, #b45309 100%)",
+            color: "#ffffff",
+            border: "none",
+            padding: "1rem 2rem",
+            borderRadius: "8px",
+            fontWeight: 700,
+            fontSize: "1.3rem",
+            cursor: "pointer",
+            marginTop: "1rem",
+          }}
+        >
+          Order This Formula
+        </button>
+      </FormContainer>
+    );
+  }
+
   function handleSubmit(e) {
     e.preventDefault();
     setErrors({});
@@ -265,6 +325,7 @@ export default function ReviewForm({ productId, onCancel, onSuccess }) {
         userName: userName.trim() || "Verified Customer",
         userEmail: userEmail ? userEmail.trim() : null,
         userId: user?.id || null,
+        isAdmin,
       },
       {
         onSuccess: () => {
@@ -278,6 +339,11 @@ export default function ReviewForm({ productId, onCancel, onSuccess }) {
 
   return (
     <FormContainer onSubmit={handleSubmit}>
+      <VerifiedHeaderNotice>
+        <FaCheckCircle />
+        <span>Verified Buyer: Your purchase of this formula has been verified. Thank you for sharing your feedback!</span>
+      </VerifiedHeaderNotice>
+
       <FormTitle>Write a Customer Review</FormTitle>
       <Subtitle>Share your honest experience to guide fellow botanical skincare lovers</Subtitle>
 

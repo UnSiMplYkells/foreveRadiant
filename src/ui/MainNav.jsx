@@ -9,6 +9,8 @@ import styled from "styled-components";
 const StyledNav = styled.nav`
   display: flex;
   align-items: center;
+  flex-shrink: 1;
+  min-width: 0;
 `;
 
 const StyledUl = styled.ul`
@@ -75,6 +77,12 @@ const StyledNavLink = styled(NavLink)`
   }
 `;
 
+const DesktopOnlyLi = styled.li`
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
 export default function MainNav() {
   const { isAuthenticated } = useUser();
   const location = useLocation();
@@ -90,22 +98,30 @@ export default function MainNav() {
   return (
     <StyledNav aria-label="Main Navigation">
       <StyledUl>
-        {/* UNAUTHENTICATED (MARKETING) NAVIGATION */}
-        {!isAuthenticated && (
+        {/* Core links always visible in header on all devices: Home & Collection */}
+        <li>
+          <StyledNavLink to="/home">
+            <span>Home</span>
+            <IoIosHome />
+          </StyledNavLink>
+        </li>
+        <li>
+          <StyledNavLink to="/collection">
+            <span>Collection</span>
+            <MdCollections />
+          </StyledNavLink>
+        </li>
+
+        {/* Secondary links visible on desktop; on mobile housed inside hamburger */}
+        {!isAuthenticated ? (
           <>
-            <li>
-              <StyledNavLink to="/home">
-                <span>Home</span>
-                <IoIosHome />
-              </StyledNavLink>
-            </li>
-            <li>
+            <DesktopOnlyLi>
               <StyledNavLink to="/about">
                 <span>About Us</span>
                 <FaCircleInfo />
               </StyledNavLink>
-            </li>
-            <li>
+            </DesktopOnlyLi>
+            <DesktopOnlyLi>
               <StyledNavLink
                 to={location.pathname === "/home" ? "#contact" : "/home#contact"}
                 onClick={handleContactClick}
@@ -113,32 +129,15 @@ export default function MainNav() {
                 <span>Contact Us</span>
                 <HiOutlinePhone />
               </StyledNavLink>
-            </li>
+            </DesktopOnlyLi>
           </>
-        )}
-
-        {/* AUTHENTICATED (STOREFRONT) NAVIGATION */}
-        {isAuthenticated && (
-          <>
-            <li>
-              <StyledNavLink to="/home">
-                <span>Home</span>
-                <IoIosHome />
-              </StyledNavLink>
-            </li>
-            <li>
-              <StyledNavLink to="/collection">
-                <span>Collection</span>
-                <MdCollections />
-              </StyledNavLink>
-            </li>
-            <li>
-              <StyledNavLink to="/order">
-                <span>Orders</span>
-                <MdOutlineReceiptLong />
-              </StyledNavLink>
-            </li>
-          </>
+        ) : (
+          <DesktopOnlyLi>
+            <StyledNavLink to="/order">
+              <span>Orders</span>
+              <MdOutlineReceiptLong />
+            </StyledNavLink>
+          </DesktopOnlyLi>
         )}
       </StyledUl>
     </StyledNav>

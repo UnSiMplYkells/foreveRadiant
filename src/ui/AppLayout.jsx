@@ -10,15 +10,27 @@ const Main = styled.main`
   flex: 1;
   background-color: var(--bg-main);
   color: var(--text-primary);
+  width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
+  overflow-x: hidden;
+
+  @media (max-width: 500px) {
+    padding: 1.2rem 1.2rem 3.5rem;
+  }
 `;
 
 const Div = styled.div`
   max-width: 1700px;
   min-height: 100vh;
+  width: 100%;
+  max-width: 100vw;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
   background-color: var(--bg-main);
+  box-sizing: border-box;
+  overflow-x: hidden;
 `;
 
 export default function AppLayout() {

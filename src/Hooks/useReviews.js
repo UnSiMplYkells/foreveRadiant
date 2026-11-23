@@ -1,6 +1,43 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { fetchProductReviews, addReview, deleteReview } from "../Services/apiReviews";
+import {
+  fetchProductReviews,
+  addReview,
+  deleteReview,
+  checkUserHasPurchased,
+} from "../Services/apiReviews";
+import { useUserProfile } from "./useUserProfile";
 import toast from "react-hot-toast";
+
+/**
+ * Hook to verify if current authenticated customer has bought this product
+ * @param {number|string} productId
+ */
+export function useVerifiedPurchase(productId) {
+  const { user, isAdmin, isAuthenticated } = useUserProfile();
+  const numericId = Number(productId);
+
+  const {
+    data: hasPurchased = false,
+    isLoading: isCheckingPurchase,
+  } = useQuery({
+    queryKey: ["verified-purchase", user?.id, numericId],
+    queryFn: async () => {
+      if (isAdmin) return true; // Admins can test/review
+      if (!user?.id || !numericId) return false;
+      return await checkUserHasPurchased(user.id, numericId);
+    },
+    enabled: Boolean(isAuthenticated && numericId),
+    staleTime: 60 * 1000,
+  });
+
+  return {
+    hasPurchased: isAdmin || Boolean(hasPurchased),
+    isCheckingPurchase: isAuthenticated && isCheckingPurchase,
+    isAuthenticated,
+    user,
+    isAdmin,
+  };
+}
 
 /**
  * Hook to fetch reviews for a specific product

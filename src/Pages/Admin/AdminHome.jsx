@@ -392,6 +392,7 @@ export default function AdminHome() {
 
   function isOrderPaid(o) {
     if (o.is_paid === true) return true;
+    if (String(o.payment_status || "").toLowerCase() === "paid") return true;
     const s = String(o.status || "").toLowerCase();
     return ["paid", "shipped", "delivered"].includes(s);
   }

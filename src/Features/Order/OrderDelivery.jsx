@@ -206,9 +206,9 @@ export default function  OrderDelivery(){
     hour12: false, // Change to false for 24-hour format
   });
 
-  const shipTo = newAddress || shippingAddress
-  const contactInfo = newPhoneNumber || phoneNumber
-  const orderStatus = "not paid"
+  const shipTo = newAddress || shippingAddress;
+  const contactInfo = newPhoneNumber || phoneNumber;
+  const orderStatus = "pending";
 
   async function handlePlaceOrder(){
     try {

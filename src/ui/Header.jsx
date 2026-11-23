@@ -9,18 +9,25 @@ const StyledHeader = styled.header`
   border-bottom: 1px solid var(--border-color);
   height: auto;
   width: 100%;
+  max-width: 100vw;
+  box-sizing: border-box;
   background-color: var(--header-bg);
   backdrop-filter: blur(12px);
-  z-index: 10;
+  z-index: 100;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px clamp(12px, 3vw, 36px);
+  padding: 8px clamp(10px, 2.5vw, 32px);
   position: sticky;
   top: 0;
 
   @media (width > 1000px) {
     gap: 3rem;
+  }
+
+  @media (max-width: 500px) {
+    padding: 6px 10px;
+    gap: 8px;
   }
 `;
 

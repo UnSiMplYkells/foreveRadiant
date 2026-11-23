@@ -7,7 +7,9 @@ export async function createOrder(userId, totalPrice, orderStatus, zipCode, ship
       {
         user_id: userId,
         total_price: totalPrice,
-        status: orderStatus,
+        status: orderStatus && orderStatus !== "not paid" ? orderStatus : "pending",
+        is_paid: false,
+        payment_status: "unpaid",
         zip_code: zipCode,
         shipping_address: shipTo,
         order_id: orderId,
@@ -81,8 +83,8 @@ export async function fetchAllOrders() {
 
 export async function updateOrderStatus(orderId, newStatus) {
   // Business Guardrail Check: Never fulfill an order if payment is not confirmed
-  if (newStatus === "shipped" || newStatus === "delivered") {
-    let checkQuery = supabase.from("orders").select("id, order_id, is_paid, status");
+  if (newStatus === "shipped" || newStatus === "delivered" || newStatus === "processing") {
+    let checkQuery = supabase.from("orders").select("id, order_id, is_paid, payment_status, status");
     if (typeof orderId === "number" || (!isNaN(orderId) && !String(orderId).includes("-"))) {
       checkQuery = checkQuery.eq("id", Number(orderId));
     } else {
@@ -90,8 +92,11 @@ export async function updateOrderStatus(orderId, newStatus) {
     }
     const { data: orderRecord, error: checkError } = await checkQuery.maybeSingle();
     if (!checkError && orderRecord) {
-      const isPaid = orderRecord.is_paid === true || String(orderRecord.status).toLowerCase() === "paid";
-      if (!isPaid) {
+      const isPaid =
+        orderRecord.is_paid === true ||
+        String(orderRecord.payment_status).toLowerCase() === "paid" ||
+        String(orderRecord.status).toLowerCase() === "paid";
+      if (!isPaid && (newStatus === "shipped" || newStatus === "delivered")) {
         throw new Error(
           `Action Blocked: Order #${orderRecord.order_id || orderId} is marked UNPAID. You cannot ship or fulfill an order until payment is verified.`
         );
@@ -125,6 +130,7 @@ export async function confirmOrderPayment(orderId, paymentMethod = "manual_bank_
     .from("orders")
     .update({
       is_paid: true,
+      payment_status: "paid",
       paid_at: new Date().toISOString(),
       payment_method: paymentMethod,
       status: "processing",
@@ -140,6 +146,36 @@ export async function confirmOrderPayment(orderId, paymentMethod = "manual_bank_
 
   if (error) {
     console.error("Error confirming payment:", error.message);
+    throw new Error(error.message);
+  }
+
+  return data?.[0] || data;
+}
+
+/**
+ * Storefront payment confirmation fallback
+ */
+export async function markOrderPaid(orderId, paymentMethod = "flutterwave") {
+  let query = supabase
+    .from("orders")
+    .update({
+      is_paid: true,
+      payment_status: "paid",
+      paid_at: new Date().toISOString(),
+      payment_method: paymentMethod,
+      status: "processing",
+    });
+
+  if (typeof orderId === "number" || (!isNaN(orderId) && !String(orderId).includes("-"))) {
+    query = query.eq("id", Number(orderId));
+  } else {
+    query = query.eq("order_id", orderId);
+  }
+
+  const { data, error } = await query.select();
+
+  if (error) {
+    console.error("Error marking order paid:", error.message);
     throw new Error(error.message);
   }
 
