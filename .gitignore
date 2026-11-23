@@ -57,6 +57,7 @@ ehthumbs.db
 # Supabase Local
 .supabase/.temp/
 .supabase/local/
+supabase/.temp/
 
 # Database Seeding & Generator Scripts
 scratch_*.js
