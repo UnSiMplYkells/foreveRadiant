@@ -29,6 +29,7 @@ const AdminHome = lazy(() => import("./Pages/Admin/AdminHome"));
 const AdminProducts = lazy(() => import("./Pages/Admin/AdminProducts"));
 const AdminOrders = lazy(() => import("./Pages/Admin/AdminOrders"));
 const AdminAnalytics = lazy(() => import("./Pages/Admin/AdminAnalytics"));
+const AdminProfile = lazy(() => import("./Pages/Admin/AdminProfile"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -54,6 +55,7 @@ const DynamicTitle = () => {
       "/admin/products": "Forever Radiance - Products Management",
       "/admin/orders": "Forever Radiance - Orders & Fulfillment",
       "/admin/analytics": "Forever Radiance - Visual Analytics",
+      "/admin/profile": "Forever Radiance - Admin Profile",
       "/login": "Forever Radiance - Login",
       "/signup": "Forever Radiance - Sign Up",
       "/privacyPolicy": "Forever Radiance - Privacy Policy",
@@ -109,6 +111,7 @@ export default function App() {
                     <Route path="products" element={<AdminProducts />} />
                     <Route path="orders" element={<AdminOrders />} />
                     <Route path="analytics" element={<AdminAnalytics />} />
+                    <Route path="profile" element={<AdminProfile />} />
                   </Route>
                 </Route>
                 <Route path="/productDetails/:productId" element={<FullProductDetails />} />

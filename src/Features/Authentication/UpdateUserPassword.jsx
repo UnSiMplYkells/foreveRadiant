@@ -1,201 +1,282 @@
 import styled from "styled-components";
-import supabase from "../../Services/supabase"
 import { useState } from "react";
-import { useUser } from "./useUser";
-import { useUpdateUser } from "../Authentication/useUpdateUser"
 import { useForm } from "react-hook-form";
 import { toast } from "react-hot-toast";
-import MiniLoader from "../../ui/MiniLoader";
-import Button from "../../ui/Button";
+import { FaLock, FaKey, FaShieldAlt } from "react-icons/fa";
+import supabase from "../../Services/supabase";
+import { useUser } from "./useUser";
+import { useUpdateUser } from "../Authentication/useUpdateUser";
 import { useLogout } from "./useLogout";
+import MiniLoader from "../../ui/MiniLoader";
 
-
-const Main = styled.div`
-  margin-top: 30px; 
-`
-
-const Heading = styled.p`
-  text-transform: uppercase;
-  font-weight: bold;
-
-  @media (max-width: 820px) {
-    font-size: 1.2em;
-  }
-
-  @media (min-width: 820px) {
-    font-size: 1.5em;
-  }
-`
-
-const Form = styled.form`
-  margin-top: 5px;
-
+const Card = styled.div`
+  background: var(--bg-card, #ffffff);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 12px;
+  padding: clamp(20px, 3vw, 32px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  
+  gap: 20px;
 `;
 
-const InputWrapper = styled.div`
-  margin-left: 5px; 
+const SectionHeader = styled.div`
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--border-color, #e5e7eb);
 
+  h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary, #111827);
+    margin: 0;
+  }
+
+  p {
+    margin: 4px 0 0;
+    font-size: 0.85rem;
+    color: var(--color-grey-500, #6b7280);
+  }
+`;
+
+const FormGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const FormGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 20px; 
-  
-`
+  gap: 6px;
 
-const Inputs = styled.div`
+  label {
+    font-size: 0.84rem;
+    font-weight: 600;
+    color: var(--color-grey-600, #4b5563);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    svg {
+      color: var(--color-brown, #7c2d12);
+      font-size: 0.85rem;
+    }
+  }
+
+  input {
+    padding: 10px 14px;
+    border: 1px solid var(--border-color, #d1d5db);
+    border-radius: 8px;
+    font-size: 0.92rem;
+    background: var(--bg-surface-soft, #f9fafb);
+    color: var(--text-primary, #111827);
+    outline: none;
+    transition: all 0.2s ease;
+
+    &:focus {
+      border-color: var(--color-brown, #7c2d12);
+      background: var(--bg-card, #ffffff);
+      box-shadow: 0 0 0 3px rgba(124, 45, 18, 0.1);
+    }
+
+    &:disabled {
+      background: var(--bg-surface-soft, #f3f4f6);
+      color: var(--color-grey-500, #9ca3af);
+      cursor: not-allowed;
+    }
+  }
+
+  .field-hint {
+    font-size: 0.76rem;
+    color: var(--color-grey-500, #6b7280);
+    margin-top: 2px;
+  }
+
+  .field-error {
+    font-size: 0.78rem;
+    color: #dc2626;
+    margin-top: 2px;
+    font-weight: 500;
+  }
+`;
+
+const ButtonRow = styled.div`
   display: flex;
-  flex-direction: column;
-  gap: 5px; 
-`
+  justify-content: flex-end;
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color, #e5e7eb);
+`;
 
-const Input = styled.input`
-  width: 50%;
-  font-size: 15px;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  outline: none;
-  transition: border-color 0.3s ease;
-  margin-left: 10px;
+const SubmitButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: var(--color-brown, #7c2d12);
+  color: #ffffff;
+  border: 1px solid var(--color-brown, #7c2d12);
 
-  &:focus {
-    border-color: green;
+  &:hover:not(:disabled) {
+    background: #5c200c;
+    transform: translateY(-1px);
   }
 
   &:disabled {
-    background-color: #ccc;
+    opacity: 0.6;
     cursor: not-allowed;
-    opacity: 0.8;
-  }
-
-  @media (max-width: 500px) {
-    width: 85%;
   }
 `;
 
-const Label = styled.label`
-  font-weight: 500;
-  white-space: nowrap;
-`;
-
-const StyledButton = styled(Button)`
-  width: fit-content;
-  position: relative;
-`;
-
-export default function UpdateUserPassword(){
+export default function UpdateUserPassword() {
   const { register, handleSubmit, reset } = useForm();
   const { user } = useUser();
+  const [newPasswordVal, setNewPasswordVal] = useState("");
+  const [confirmPasswordVal, setConfirmPasswordVal] = useState("");
+  const [errorMsg, setErrorMsg] = useState("");
 
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [error, setError] = useState("");
   const { updateUser, isUpdating } = useUpdateUser();
-
   const { logout } = useLogout();
-  
-  function handlePasswordChange(e) {
-    const newPassword = e.target.value;
-    setPassword(newPassword);
-    validatePasswords(newPassword, confirmPassword);
-  }
 
-  function handleConfirmPasswordChange(e) {
-    const newConfirmPassword = e.target.value;
-    setConfirmPassword(newConfirmPassword);
-    validatePasswords(password, newConfirmPassword);
-  }
-
-  function validatePasswords(pass, confirmPass) {
-    if (confirmPass.length > 0 && pass !== confirmPass) {
-      setError("Passwords do not match!");
+  function validate(newPass, confirmPass) {
+    if (confirmPass.length > 0 && newPass !== confirmPass) {
+      setErrorMsg("Passwords do not match");
     } else {
-      setError(""); // Clear error when they match
+      setErrorMsg("");
     }
   }
 
-async function onSubmitForm({ currentPassword, newPassword, confirmedPassword }) {
-  if (newPassword !== confirmedPassword) {
-    setError("Passwords do not match!");
-    return null;
-  } 
+  async function onSubmitForm({ currentPassword, newPassword, confirmedPassword }) {
+    if (newPassword !== confirmedPassword) {
+      setErrorMsg("Passwords do not match");
+      return;
+    }
 
-  const { error } = await supabase.auth.signInWithPassword({
-    email: user.email,
-    password: currentPassword,
-  });
+    if (newPassword.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
 
-  if (error) {
-    toast.error("Incorrect current password!");
-    return;
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+
+    if (signInError) {
+      toast.error("Current password verification failed. Please check and retry.");
+      return;
+    }
+
+    await toast.promise(updateUser({ password: newPassword }), {
+      loading: "Securing account with new password...",
+      success: "Password updated successfully!",
+      error: "Failed to update password. Please try again.",
+    });
+
+    reset();
+    setNewPasswordVal("");
+    setConfirmPasswordVal("");
+    setErrorMsg("");
+    await logout();
   }
 
-  await toast.promise(
-    updateUser({ password: newPassword }),
-    {
-      loading: "Updating password...",
-      success: "Password updated successfully!" ,
-      error: "Failed to update password!",
-    }
-  );
+  return (
+    <Card>
+      <SectionHeader>
+        <h3>Security &amp; Password</h3>
+        <p>Ensure your account is protected with a unique, robust password</p>
+      </SectionHeader>
 
-  await logout();
-  reset()
-}
-
-  return(
-    <Main>
-      <Heading>Update Password</Heading>
-      <Form onSubmit={handleSubmit(onSubmitForm)}>
-        <InputWrapper>
-          <Inputs>
-            <Label htmlFor="password">Password:</Label>
-            <Input 
-              type="password" 
-              id="password"
-              disabled={isUpdating} 
-              {...register("currentPassword")}
-              required
+      <form onSubmit={handleSubmit(onSubmitForm)}>
+        <FormGrid>
+          {/* Current Password */}
+          <FormGroup>
+            <label htmlFor="currentPassword">
+              <FaKey /> Current Password
+            </label>
+            <input
+              type="password"
+              id="currentPassword"
+              disabled={isUpdating}
+              placeholder="Enter current password"
+              {...register("currentPassword", { required: true })}
             />
-          </Inputs>
+            <span className="field-hint">Required to verify identity</span>
+          </FormGroup>
 
-          <Inputs>
-            <Label htmlFor="newPassword">New password:</Label>
-            <Input 
-              type="password" 
+          {/* New Password */}
+          <FormGroup>
+            <label htmlFor="newPassword">
+              <FaLock /> New Password
+            </label>
+            <input
+              type="password"
               id="newPassword"
-              disabled={isUpdating} 
+              disabled={isUpdating}
+              placeholder="At least 8 characters"
               {...register("newPassword", {
-                onChange: (e) => handlePasswordChange(e),
-                minLength:{
-                  value: 8,
-                  message: "Password needs a minimum of 8 characters"
-                }
+                required: true,
+                minLength: 8,
+                onChange: (e) => {
+                  setNewPasswordVal(e.target.value);
+                  validate(e.target.value, confirmPasswordVal);
+                },
               })}
-              required
             />
-            { password.length < 8 && <p style={{ color: "rgb(238, 16, 16)", fontSize: "10px" }}>Minimum 8 characters</p>}
-          </Inputs>
-          
-          <Inputs>
-            <Label htmlFor="confirmedPassword">Confirm password:</Label>
-            <Input 
-              type="password" 
+            {newPasswordVal.length > 0 && newPasswordVal.length < 8 ? (
+              <span className="field-error">Minimum 8 characters required</span>
+            ) : (
+              <span className="field-hint">Must be 8+ characters</span>
+            )}
+          </FormGroup>
+
+          {/* Confirm Password */}
+          <FormGroup>
+            <label htmlFor="confirmedPassword">
+              <FaLock /> Confirm New Password
+            </label>
+            <input
+              type="password"
               id="confirmedPassword"
-              disabled={isUpdating} 
-              {...register("confirmedPassword", { onChange: (e) => handleConfirmPasswordChange(e)})}
-              required
+              disabled={isUpdating}
+              placeholder="Re-enter new password"
+              {...register("confirmedPassword", {
+                required: true,
+                onChange: (e) => {
+                  setConfirmPasswordVal(e.target.value);
+                  validate(newPasswordVal, e.target.value);
+                },
+              })}
             />
-            {error && <p style={{ color: "red", marginTop: "5px" }}>{error}</p>}
-          </Inputs>
-        </InputWrapper>
-        <StyledButton size="large" variation="cart" disabled={isUpdating}>
-          {isUpdating ? <MiniLoader /> : "SAVE"}
-        </StyledButton>
-      </Form>
-    </Main>
-  )
+            {errorMsg ? (
+              <span className="field-error">{errorMsg}</span>
+            ) : (
+              <span className="field-hint">Repeat new password to confirm</span>
+            )}
+          </FormGroup>
+        </FormGrid>
+
+        <ButtonRow>
+          <SubmitButton type="submit" disabled={isUpdating}>
+            {isUpdating ? (
+              <MiniLoader />
+            ) : (
+              <>
+                <FaShieldAlt /> Update Password
+              </>
+            )}
+          </SubmitButton>
+        </ButtonRow>
+      </form>
+    </Card>
+  );
 }

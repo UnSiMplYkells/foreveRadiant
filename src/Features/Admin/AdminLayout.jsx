@@ -5,6 +5,7 @@ import {
   FaBoxes,
   FaShippingFast,
   FaChartLine,
+  FaUserShield,
   FaStore,
 } from "react-icons/fa";
 import { useAllOrders } from "../../Hooks/useAllOrders";
@@ -170,6 +171,11 @@ export default function AdminLayout() {
         <AdminTabLink to="/admin/analytics">
           <FaChartLine />
           <span>Visual Analytics</span>
+        </AdminTabLink>
+
+        <AdminTabLink to="/admin/profile">
+          <FaUserShield />
+          <span>Admin Profile</span>
         </AdminTabLink>
 
         <StorefrontLink to="/home" title="Return to customer store">

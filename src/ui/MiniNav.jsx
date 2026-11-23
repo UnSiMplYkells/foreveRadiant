@@ -107,6 +107,60 @@ const AdminPill = styled(NavLink)`
   }
 `;
 
+const AdminProfileLink = styled(NavLink)`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  background: var(--bg-surface-soft, #f8f9fa);
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 4px 12px 4px 6px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+
+  .text {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: var(--text-primary, #374151);
+    letter-spacing: 0.3px;
+  }
+
+  &:hover,
+  &.active {
+    border-color: var(--color-brown, #7c2d12);
+    background: #fef3c7;
+
+    .text {
+      color: #7c2d12;
+    }
+  }
+`;
+
+const AdminAvatarThumb = styled.div`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fde68a;
+  border: 1.5px solid var(--color-brown, #7c2d12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .initial {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: var(--color-brown, #7c2d12);
+  }
+`;
+
 const Img = styled.img`
   width: 44px;
   aspect-ratio: 1;
@@ -159,6 +213,15 @@ export default function MiniNav() {
   const { cartItems } = useCartItem();
 
   const isOnAdmin = location.pathname.startsWith("/admin");
+  const adminInitial = (
+    user?.user_metadata?.fullName ||
+    user?.user_metadata?.full_name ||
+    user?.email ||
+    "A"
+  )
+    .trim()
+    .charAt(0)
+    .toUpperCase();
 
   return (
     <nav>
@@ -173,6 +236,7 @@ export default function MiniNav() {
             {isDarkMode ? <HiOutlineSun /> : <HiOutlineMoon />}
           </ThemeToggle>
 
+          {/* When in STOREFRONT mode and user is admin, show Admin Portal button */}
           {isAuthenticated && isAdmin && !isOnAdmin && (
             <AdminPill to="/admin" title="Admin Dashboard">
               <MdAdminPanelSettings />
@@ -180,23 +244,42 @@ export default function MiniNav() {
             </AdminPill>
           )}
 
-          <StyledNavLink to="/cart">
-            <IoCart />
-            <Bubble>{cartItems?.length || 0}</Bubble>
-          </StyledNavLink>
+          {/* When in STOREFRONT mode, show Cart and Storefront Account links */}
+          {!isOnAdmin && (
+            <>
+              <StyledNavLink to="/cart" title="View Cart">
+                <IoCart />
+                <Bubble>{cartItems?.length || 0}</Bubble>
+              </StyledNavLink>
 
-          <StyledNavLink to="/account">
-            {isAuthenticated && (avatar || avatarUrlOAuth) ? (
-              <Img src={avatar?.avatar || avatarUrlOAuth || ""} alt="User Avatar" />
-            ) : (
-              <FaUserCircle />
-            )}
-          </StyledNavLink>
+              <StyledNavLink to="/account" title="My Account">
+                {isAuthenticated && (avatar || avatarUrlOAuth) ? (
+                  <Img src={avatar?.avatar || avatarUrlOAuth || ""} alt="User Avatar" />
+                ) : (
+                  <FaUserCircle />
+                )}
+              </StyledNavLink>
 
-          {!isAuthenticated && (
-            <StyledNavLink to="/login">
-              <Button size="large">LOGIN</Button>
-            </StyledNavLink>
+              {!isAuthenticated && (
+                <StyledNavLink to="/login">
+                  <Button size="large">LOGIN</Button>
+                </StyledNavLink>
+              )}
+            </>
+          )}
+
+          {/* When in ADMIN mode: Cart and Consumer Account are REMOVED, showing dedicated Admin Profile link */}
+          {isOnAdmin && (
+            <AdminProfileLink to="/admin/profile" title="Admin Profile & Security">
+              <AdminAvatarThumb>
+                {avatar || avatarUrlOAuth ? (
+                  <img src={avatar?.avatar || avatarUrlOAuth || ""} alt="Admin Avatar" />
+                ) : (
+                  <span className="initial">{adminInitial}</span>
+                )}
+              </AdminAvatarThumb>
+              <span className="text">Profile</span>
+            </AdminProfileLink>
           )}
         </Li>
       </ul>

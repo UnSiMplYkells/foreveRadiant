@@ -282,8 +282,6 @@ export default function  OrderDelivery(){
     }
   }
 
-  console.log(userDetailsItem)
-  
   return (
     <Container>
       <MenuHeading>Delivery <span>Details_</span> </MenuHeading>

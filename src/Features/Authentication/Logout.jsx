@@ -1,41 +1,56 @@
-import { useLogout } from "./useLogout"
-import Button from "../../ui/Button"
-import MiniLoader from "../../ui/MiniLoader"
-import styled from "styled-components"
+import styled from "styled-components";
+import { HiArrowRightOnRectangle } from "react-icons/hi2";
+import { useLogout } from "./useLogout";
+import MiniLoader from "../../ui/MiniLoader";
 
+const LogoutButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card, #ffffff);
+  color: #dc2626;
+  border: 1px solid #fecaca;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 
-const StyledButton = styled(Button)`
-  width: 10rem;
-  height: 4rem;
-  font-size: 14px;
-  position: absolute;
-  left: 72%;
-
-  @media (width < 500px) {
-    width: 6rem;
-    height: 3rem;
-    font-size: 8px;
-    padding: 0.3rem 0.6rem;
-    left: 76%;
+  svg {
+    font-size: 1.1rem;
+    transition: transform 0.2s ease;
   }
 
+  &:hover:not(:disabled) {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #b91c1c;
 
-  @media (min-width: 1440px) {
-    left: 64%;
+    svg {
+      transform: translateX(2px);
+    }
   }
-`
 
-export default function Logout() {
-  const { logout , isLoading} = useLogout()
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+`;
+
+export default function Logout({ className }) {
+  const { logout, isLoading } = useLogout();
 
   return (
-      <StyledButton 
-        size="small" 
-        variation="danger" 
-        disabled={isLoading} 
-        onClick={logout}
-      >
-        {isLoading ? <MiniLoader /> : "LOGOUT"}
-      </StyledButton>
-  )
+    <LogoutButton
+      className={className}
+      type="button"
+      disabled={isLoading}
+      onClick={logout}
+      title="Sign out of your account"
+    >
+      <HiArrowRightOnRectangle />
+      <span>{isLoading ? <MiniLoader /> : "Log Out"}</span>
+    </LogoutButton>
+  );
 }
