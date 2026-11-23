@@ -16,9 +16,12 @@ import Loader from '../ui/Loader';
 
 const MainContainer = styled.div`
   width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   gap: 3.5rem;
+  box-sizing: border-box;
 `;
 
 const Container = styled.div`
@@ -35,8 +38,8 @@ const Container = styled.div`
   align-items: start;
 
   @media (max-width: 860px) {
-    grid-template-columns: 1fr;
-    gap: 2.5rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2rem;
   }
 `;
 
@@ -45,6 +48,8 @@ const LeftColumn = styled.div`
   gap: 14px;
   height: 480px;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
   box-sizing: border-box;
 
   @media (max-width: 540px) {
@@ -138,6 +143,7 @@ const RightImage = styled.img`
 
 const RightColumn = styled.div`
   width: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -159,10 +165,12 @@ const NameAvailability = styled.div`
   gap: 0.4rem;
 
   h3 {
-    font-size: 2rem;
+    font-size: clamp(1.6rem, 3.5vw, 2.2rem);
     font-weight: 700;
     color: var(--color-grey-900);
     letter-spacing: 0.03em;
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 
   p {

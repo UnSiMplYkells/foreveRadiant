@@ -1,13 +1,29 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import { useUser } from "../Features/Authentication/useUser";
 import { useDarkMode } from "../Context/DarkModeContext";
 import { IoCart } from "react-icons/io5";
 import { FaUserCircle } from "react-icons/fa";
 import { MdAdminPanelSettings } from "react-icons/md";
-import { HiOutlineSun, HiOutlineMoon } from "react-icons/hi2";
+import { HiOutlineSun, HiOutlineMoon, HiBars3 } from "react-icons/hi2";
 import styled from "styled-components";
 import Button from "./Button";
 import { useCartItem } from "../Features/Cart/useCartItems";
+import MobileDrawer from "./MobileDrawer";
+
+const NavWrapper = styled.nav`
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+`;
+
+const Ul = styled.ul`
+  display: flex;
+  align-items: center;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+`;
 
 const Li = styled.li`
   display: flex;
@@ -204,6 +220,58 @@ const Bubble = styled.div`
   }
 `;
 
+const DesktopItems = styled.div`
+  display: flex;
+  align-items: center;
+  gap: clamp(0.6rem, 1.5vw, 1.6rem);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
+`;
+
+const HamburgerBtn = styled.button`
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  background: var(--bg-surface-soft, #f8f9fa);
+  border: 1px solid var(--border-color, #e5e7eb);
+  color: var(--text-primary, #111827);
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+
+  svg {
+    width: 2.2rem;
+    height: 2.2rem;
+    color: var(--text-primary, #111827);
+  }
+
+  &:hover {
+    background: var(--color-grey-200, #e5e7eb);
+    border-color: var(--color-brown, #7c2d12);
+  }
+
+  @media (max-width: 768px) {
+    display: flex;
+  }
+`;
+
+const NotificationDot = styled.span`
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-brown, #7c2d12);
+  border: 1.5px solid var(--bg-card, #ffffff);
+`;
+
 export default function MiniNav() {
   const { isAuthenticated, isAdmin, user } = useUser();
   const { isDarkMode, toggleDarkMode } = useDarkMode();
@@ -211,6 +279,7 @@ export default function MiniNav() {
   const avatar = user?.user_metadata?.avatar;
   const avatarUrlOAuth = user?.user_metadata?.avatar_url;
   const { cartItems } = useCartItem();
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   const isOnAdmin = location.pathname.startsWith("/admin");
   const adminInitial = (
@@ -224,65 +293,92 @@ export default function MiniNav() {
     .toUpperCase();
 
   return (
-    <nav>
-      <ul>
+    <NavWrapper aria-label="Quick Actions">
+      <Ul>
         <Li>
-          <ThemeToggle
-            type="button"
-            onClick={toggleDarkMode}
-            title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
-            aria-label="Toggle Dark Mode"
-          >
-            {isDarkMode ? <HiOutlineSun /> : <HiOutlineMoon />}
-          </ThemeToggle>
+          {/* DESKTOP ONLY NAVIGATION (Hidden on mobile <= 768px) */}
+          <DesktopItems>
+            <ThemeToggle
+              type="button"
+              onClick={toggleDarkMode}
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              aria-label="Toggle Dark Mode"
+            >
+              {isDarkMode ? <HiOutlineSun /> : <HiOutlineMoon />}
+            </ThemeToggle>
 
-          {/* When in STOREFRONT mode and user is admin, show Admin Portal button */}
-          {isAuthenticated && isAdmin && !isOnAdmin && (
-            <AdminPill to="/admin" title="Admin Dashboard">
-              <MdAdminPanelSettings />
-              <span>Admin</span>
-            </AdminPill>
-          )}
+            {/* When in STOREFRONT mode and user is admin, show Admin Portal button */}
+            {isAuthenticated && isAdmin && !isOnAdmin && (
+              <AdminPill to="/admin" title="Admin Dashboard">
+                <MdAdminPanelSettings />
+                <span>Admin</span>
+              </AdminPill>
+            )}
 
-          {/* When in STOREFRONT mode, show Cart and Storefront Account links */}
-          {!isOnAdmin && (
-            <>
-              <StyledNavLink to="/cart" title="View Cart">
-                <IoCart />
-                <Bubble>{cartItems?.length || 0}</Bubble>
-              </StyledNavLink>
-
-              <StyledNavLink to="/account" title="My Account">
-                {isAuthenticated && (avatar || avatarUrlOAuth) ? (
-                  <Img src={avatar?.avatar || avatarUrlOAuth || ""} alt="User Avatar" />
-                ) : (
-                  <FaUserCircle />
-                )}
-              </StyledNavLink>
-
-              {!isAuthenticated && (
-                <StyledNavLink to="/login">
-                  <Button size="large">LOGIN</Button>
+            {/* When in STOREFRONT mode, show Cart and Storefront Account links */}
+            {!isOnAdmin && (
+              <>
+                <StyledNavLink to="/cart" title="View Cart">
+                  <IoCart />
+                  <Bubble>{cartItems?.length || 0}</Bubble>
                 </StyledNavLink>
-              )}
-            </>
-          )}
 
-          {/* When in ADMIN mode: Cart and Consumer Account are REMOVED, showing dedicated Admin Profile link */}
-          {isOnAdmin && (
-            <AdminProfileLink to="/admin/profile" title="Admin Profile & Security">
-              <AdminAvatarThumb>
-                {avatar || avatarUrlOAuth ? (
-                  <img src={avatar?.avatar || avatarUrlOAuth || ""} alt="Admin Avatar" />
-                ) : (
-                  <span className="initial">{adminInitial}</span>
+                <StyledNavLink to="/account" title="My Account">
+                  {isAuthenticated && (avatar || avatarUrlOAuth) ? (
+                    <Img src={avatar?.avatar || avatarUrlOAuth || ""} alt="User Avatar" />
+                  ) : (
+                    <FaUserCircle />
+                  )}
+                </StyledNavLink>
+
+                {!isAuthenticated && (
+                  <StyledNavLink to="/login">
+                    <Button size="large">LOGIN</Button>
+                  </StyledNavLink>
                 )}
-              </AdminAvatarThumb>
-              <span className="text">Profile</span>
-            </AdminProfileLink>
-          )}
+              </>
+            )}
+
+            {/* When in ADMIN mode: Cart and Consumer Account are REMOVED, showing dedicated Admin Profile link */}
+            {isOnAdmin && (
+              <AdminProfileLink to="/admin/profile" title="Admin Profile & Security">
+                <AdminAvatarThumb>
+                  {avatar || avatarUrlOAuth ? (
+                    <img src={avatar?.avatar || avatarUrlOAuth || ""} alt="Admin Avatar" />
+                  ) : (
+                    <span className="initial">{adminInitial}</span>
+                  )}
+                </AdminAvatarThumb>
+                <span className="text">Profile</span>
+              </AdminProfileLink>
+            )}
+          </DesktopItems>
+
+          {/* MOBILE HAMBURGER BUTTON (Visible only on mobile <= 768px) */}
+          <HamburgerBtn
+            type="button"
+            onClick={() => setIsDrawerOpen(true)}
+            aria-label="Open mobile navigation menu"
+            title="Open menu"
+          >
+            <HiBars3 />
+            {cartItems?.length > 0 && !isOnAdmin && <NotificationDot />}
+          </HamburgerBtn>
+
+          {/* SLIDE-OVER MOBILE DRAWER */}
+          <MobileDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+            user={user}
+            isAuthenticated={isAuthenticated}
+            isAdmin={isAdmin}
+            isOnAdmin={isOnAdmin}
+            isDarkMode={isDarkMode}
+            toggleDarkMode={toggleDarkMode}
+            cartItems={cartItems}
+          />
         </Li>
-      </ul>
-    </nav>
+      </Ul>
+    </NavWrapper>
   );
 }

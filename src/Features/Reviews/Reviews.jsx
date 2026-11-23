@@ -1,9 +1,22 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import styled from "styled-components";
-import { FaStar, FaRegStar, FaCheckCircle, FaTrashAlt, FaPen } from "react-icons/fa";
+import {
+  FaStar,
+  FaRegStar,
+  FaCheckCircle,
+  FaTrashAlt,
+  FaPen,
+  FaShieldAlt,
+  FaShoppingBag,
+  FaLock,
+} from "react-icons/fa";
 import { HiOutlineLockClosed } from "react-icons/hi";
-import { useProductReviews, useDeleteReview } from "../../Hooks/useReviews";
+import {
+  useProductReviews,
+  useDeleteReview,
+  useVerifiedPurchase,
+} from "../../Hooks/useReviews";
 import { useUserProfile } from "../../Hooks/useUserProfile";
 import ReviewForm from "./ReviewForm";
 import Spinner from "../../ui/Spinner";
@@ -177,6 +190,97 @@ const LoginPromptLink = styled(Link)`
   }
 `;
 
+const VerifiedLockPill = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: var(--bg-surface-soft, #f8f9fa);
+  border: 1px solid var(--border-color, #e5e7eb);
+  padding: 0.9rem 1.5rem;
+  border-radius: 8px;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--color-grey-700, #374151);
+
+  svg {
+    color: #d97706;
+    font-size: 1.4rem;
+  }
+`;
+
+const PurchaseRequiredNotice = styled.div`
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-left: 4px solid #d97706;
+  border-radius: 10px;
+  padding: 1.6rem 2rem;
+  margin-bottom: 2.2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.4rem;
+
+  .notice-content {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+
+    svg {
+      font-size: 2.2rem;
+      color: #d97706;
+      flex-shrink: 0;
+    }
+
+    h4 {
+      margin: 0 0 4px;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #92400e;
+    }
+
+    p {
+      margin: 0;
+      font-size: 1.22rem;
+      color: #78350f;
+      line-height: 1.5;
+    }
+  }
+
+  button {
+    background: #d97706;
+    color: #ffffff;
+    border: none;
+    padding: 0.9rem 1.6rem;
+    border-radius: 6px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.2s ease;
+    white-space: nowrap;
+
+    &:hover {
+      background: #b45309;
+    }
+  }
+`;
+
+const VerifiedBuyerBadgeSmall = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  margin-left: 0.4rem;
+`;
+
 const ReviewsList = styled.div`
   display: flex;
   flex-direction: column;
@@ -344,6 +448,13 @@ export default function Reviews({ productId }) {
     ratingCounts,
   } = useProductReviews(productId);
   const { removeReview, isDeleting } = useDeleteReview(productId);
+  const { hasPurchased, isCheckingPurchase } = useVerifiedPurchase(productId);
+
+  const userHasReviewed = Boolean(user && reviews.some((r) => r.user_id === user.id));
+
+  function scrollToProduct() {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   if (isLoading) {
     return (
@@ -388,40 +499,101 @@ export default function Reviews({ productId }) {
         </BarChartBox>
 
         <ActionBox>
-          {isAuthenticated ? (
+          {!isAuthenticated ? (
+            <LoginPromptLink to="/login" title="Sign in to verify purchase and review">
+              <HiOutlineLockClosed /> Log in to review
+            </LoginPromptLink>
+          ) : isCheckingPurchase ? (
+            <VerifiedLockPill>
+              <FaLock />
+              <span>Verifying buyer status...</span>
+            </VerifiedLockPill>
+          ) : hasPurchased ? (
             <WriteReviewButton onClick={() => setShowForm((prev) => !prev)}>
-              <FaPen /> {showForm ? "Close Form" : "Write a Review"}
+              <FaPen />
+              <span>{showForm ? "Close Form" : userHasReviewed ? "Update Review" : "Write a Review"}</span>
+              <VerifiedBuyerBadgeSmall>
+                <FaCheckCircle /> Verified Buyer
+              </VerifiedBuyerBadgeSmall>
             </WriteReviewButton>
           ) : (
-            <LoginPromptLink to="/login">
-              <HiOutlineLockClosed /> Log in to leave a review
-            </LoginPromptLink>
+            <VerifiedLockPill title="Only customers who have ordered this formula can submit a review">
+              <FaShieldAlt />
+              <span>Verified Buyers Only</span>
+            </VerifiedLockPill>
           )}
         </ActionBox>
       </MetricsContainer>
 
-      {/* 2. COLLAPSIBLE REVIEW FORM (PROTECTED) */}
-      {isAuthenticated && showForm && (
+      {/* 2. PURCHASE REQUIRED NOTICE (Only for logged in customers who haven't bought this item) */}
+      {isAuthenticated && !isCheckingPurchase && !hasPurchased && (
+        <PurchaseRequiredNotice>
+          <div className="notice-content">
+            <FaShieldAlt />
+            <div>
+              <h4>Verified Purchase Required</h4>
+              <p>
+                To maintain authentic customer feedback, reviews can only be submitted by customers who have purchased this botanical formula. Once your order has been placed and confirmed, you will be able to leave your review!
+              </p>
+            </div>
+          </div>
+          <button type="button" onClick={scrollToProduct}>
+            <FaShoppingBag /> Order This Formula
+          </button>
+        </PurchaseRequiredNotice>
+      )}
+
+      {/* 3. COLLAPSIBLE REVIEW FORM (PROTECTED: Verified Buyers & Admins Only) */}
+      {isAuthenticated && hasPurchased && showForm && (
         <ReviewForm
           productId={productId}
+          hasPurchased={hasPurchased}
           onCancel={() => setShowForm(false)}
           onSuccess={() => setShowForm(false)}
         />
       )}
 
-      {/* 3. REVIEWS LIST */}
+      {/* 4. REVIEWS LIST */}
       {reviews.length === 0 ? (
         <EmptyState>
           <h4>No Reviews Yet</h4>
           <p>Be the first to share your experience with this botanical formula!</p>
-          {isAuthenticated ? (
-            <WriteReviewButton onClick={() => setShowForm(true)}>
-              <FaPen /> Be the First to Review
-            </WriteReviewButton>
-          ) : (
+          {!isAuthenticated ? (
             <LoginPromptLink to="/login">
               <HiOutlineLockClosed /> Log in to leave a review
             </LoginPromptLink>
+          ) : hasPurchased ? (
+            <WriteReviewButton onClick={() => setShowForm(true)}>
+              <FaPen /> Be the First to Review
+              <VerifiedBuyerBadgeSmall>
+                <FaCheckCircle /> Verified Buyer
+              </VerifiedBuyerBadgeSmall>
+            </WriteReviewButton>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px" }}>
+              <p style={{ margin: 0, fontSize: "1.2rem", color: "#6b7280" }}>
+                Purchase this formula to be the first to leave a verified review.
+              </p>
+              <button
+                type="button"
+                onClick={scrollToProduct}
+                style={{
+                  background: "#d97706",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "1rem 2rem",
+                  borderRadius: "8px",
+                  fontWeight: "700",
+                  fontSize: "1.25rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                }}
+              >
+                <FaShoppingBag /> Order to Review
+              </button>
+            </div>
           )}
         </EmptyState>
       ) : (

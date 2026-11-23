@@ -344,6 +344,7 @@ export default function AdminOrders() {
   // Helper to determine if an order is paid
   function isOrderPaid(o) {
     if (o.is_paid === true) return true;
+    if (String(o.payment_status || "").toLowerCase() === "paid") return true;
     const status = String(o.status || "").toLowerCase();
     return ["paid", "shipped", "delivered"].includes(status);
   }

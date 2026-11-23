@@ -143,6 +143,9 @@ html.dark-mode {
 
 html {
   font-size: 62.5%;
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
   scrollbar-width: thin;
   scrollbar-color: var(--color-grey-400) transparent;
 
@@ -165,6 +168,15 @@ body {
   font-size: 1.6rem;
   background-color: var(--bg-main);
   color: var(--text-primary);
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
+}
+
+#root {
+  overflow-x: hidden;
+  max-width: 100vw;
+  width: 100%;
 }
 
 p, h1, h2, h3, h4, h5, h6 {
