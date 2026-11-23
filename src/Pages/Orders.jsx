@@ -1,14 +1,12 @@
-const flutterwaveKey = import.meta.env.VITE_FLUTTERWAVE_KEY
 import { useUser } from "../Features/Authentication/useUser";
-import { useOrderItems } from "../Features/Order/useOrderItem"
+import { useOrderItems } from "../Features/Order/useOrderItem";
 import { useFlutterwave, closePaymentModal } from 'flutterwave-react-v3';
 import toast from "react-hot-toast";
-import { useUpdateOrderStatus } from "../Features/Order/useUpdateOrderStatus";
-import { useUpdateAvailable } from "../Features/Order/useUpdateAvailable";
-import { useQuery } from "@tanstack/react-query";
-import { getProduct } from "../Services/apiProducts";
+import { useCheckout } from "../Hooks/useCheckout";
 import styled from "styled-components";
 import { useState } from "react";
+
+const flutterwaveKey = import.meta.env.VITE_FLUTTERWAVE_KEY || "FLWPUBK_TEST-SANDBOX";
 
 const Header = styled.div`
   display: flex;
@@ -128,55 +126,32 @@ const Button = styled.button`
   }
 `
 
-export default function Orders(){
-  const { data: DBProducts } = useQuery({
-    queryKey: ['products'],
-    queryFn: getProduct,
-  });
-
-  const { orderItems } = useOrderItems()
+export default function Orders() {
+  const { orderItems } = useOrderItems();
   const { user } = useUser();
-  const { fullName } = user?.user_metadata
-  const userEmail = user?.email
-  const { updateOrderStatus } = useUpdateOrderStatus()
-  const { updateAvailable } = useUpdateAvailable()
-  const [sorted, setSorted] = useState("")
+  const fullName = user?.user_metadata?.fullName || user?.user_metadata?.full_name || "Valued Customer";
+  const userEmail = user?.email;
+  const { executeCheckout } = useCheckout();
+  const [sorted, setSorted] = useState("");
 
-  if(orderItems?.length === 0 ) return <p>No orders found. Trying ordering some items</p>
+  if (orderItems?.length === 0) return <p>No orders found. Try ordering some items.</p>;
 
-  function handleUpdateAvailable(order){
-    if (!DBProducts) return;
-    
-    order.order_items.forEach((item) => {
-      const product = DBProducts.find(p => p.id === item.product_id);
-      if (!product) return;
-
-      const newAvailable = product.available - item.product_quantity;
-      updateAvailable({ 
-        productId: item.product_id, 
-        productRemainder: newAvailable 
-      });
-    });
-  };
-
-  function handleSorted(e){
-    setSorted(e.target.value)
+  function handleSorted(e) {
+    setSorted(e.target.value);
   }
 
-  console.log(sorted)
-
   const filteredOrders = orderItems?.filter((order) => {
-    if (sorted === "all") return true; // Show all orders
-    if (sorted === "Paid") return order.status === "paid"; // Show only paid orders
-    if (sorted === "Not paid") return order.status !== "paid"; // Show only unpaid orders
-    return true; // Fallback (default to showing all)
+    if (sorted === "all") return true;
+    if (sorted === "Paid") return order.status === "paid";
+    if (sorted === "Not paid") return order.status !== "paid";
+    return true;
   });
 
-  return(
+  return (
     <>
       <Header>
         <MenuHeading>Your <span>Orders_</span> </MenuHeading>
-        <select  onChange={handleSorted} name="sort by status">
+        <select onChange={handleSorted} name="sort by status">
           <option value="all">All</option>
           <option value="Paid">Paid</option>
           <option value="Not paid">Not paid</option>
@@ -202,59 +177,70 @@ export default function Orders(){
               <h4>Items:</h4>
               <Items>
                 {order.order_items.map((item) => (
-                  <OrderItem  key={item.id} item={item}/>
+                  <OrderItem key={item.id} item={item} />
                 ))}
               </Items>
             </div>
             <ButtonWrapper>
               {order.status !== "paid" ? (
-                  <Button
-                    onClick={() => {
-                      const dynamicConfig = {
-                        public_key: flutterwaveKey,
-                        tx_ref: Date.now(),
-                        amount: order?.total_price, // Directly using order total price
-                        currency: "NGN",
-                        payment_options: "card,mobilemoney,ussd",
-                        customer: {
-                          email: userEmail,
-                          phone_number: order?.contact, // Directly using order contact
-                          name: fullName,
-                        },
-                        customizations: {
-                          title: "Forever Radiant Inc.",
-                          description: "Payment for ordered items",
-                          logo: "https://dncqfwbhphbhudkwerlt.supabase.co/storage/v1/object/public/ui-images/logo1.png",
-                        },
-                      };
-
-                      const handleFlutterPayment = useFlutterwave(dynamicConfig);
-
-                      handleFlutterPayment({
-                        callback: (response) => {
-                          console.log(response);
-                          closePaymentModal(); // Close modal after payment
-                          if(response.status === "completed"){
-                            updateOrderStatus({orderId: order?.order_id, newStatus: "paid"})
-                            handleUpdateAvailable(order)
-                          }
-                        },
-                        onClose: () => {
-                          toast("Payment cancelled")
-                        },
-                      });
-                    }}
-                  >
-                    Pay with FlutterWAVE
-                  </Button>
-                ) : null
-              }
+                <PayOrderButton
+                  order={order}
+                  userEmail={userEmail}
+                  fullName={fullName}
+                  executeCheckout={executeCheckout}
+                />
+              ) : null}
             </ButtonWrapper>
           </Order>
         ))}
       </Wrapper>
     </>
-  )
+  );
+}
+
+function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
+  const dynamicConfig = {
+    public_key: flutterwaveKey,
+    tx_ref: Date.now(),
+    amount: order?.total_price,
+    currency: "NGN",
+    payment_options: "card,mobilemoney,ussd",
+    customer: {
+      email: userEmail,
+      phone_number: order?.contact,
+      name: fullName,
+    },
+    customizations: {
+      title: "Forever Radiant Inc.",
+      description: "Payment for ordered items",
+      logo: "https://dncqfwbhphbhudkwerlt.supabase.co/storage/v1/object/public/ui-images/logo1.png",
+    },
+  };
+
+  const handleFlutterPayment = useFlutterwave(dynamicConfig);
+
+  return (
+    <Button
+      onClick={() => {
+        handleFlutterPayment({
+          callback: async (response) => {
+            closePaymentModal();
+            if (response.status === "completed" || response.status === "successful") {
+              await executeCheckout({
+                orderId: order?.order_id,
+                items: order?.order_items || [],
+              });
+            }
+          },
+          onClose: () => {
+            toast("Payment cancelled");
+          },
+        });
+      }}
+    >
+      Pay with FlutterWAVE
+    </Button>
+  );
 } 
 
 function OrderItem({ item }) {
@@ -263,7 +249,7 @@ function OrderItem({ item }) {
       <p>{item.product_name}</p>
       <p> Quantity: {item.product_quantity}</p>
       <p>Price: ₦{item.product_price } </p>
-      <p>Size: {item.product_size_ml}ml</p>
+      <p>Size: {item.product_size_ml ? (String(item.product_size_ml).endsWith("ml") || String(item.product_size_ml).endsWith("g") ? item.product_size_ml : `${item.product_size_ml}ml`) : "-"}</p>
     </OrderItems>
   )
 }

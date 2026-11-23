@@ -18,8 +18,9 @@ export default function CartTotal(){
   )
 
   const subtotal = checkedCartItems?.reduce((total, item) => {
-    return total + item.products.price * item.quantity
-  }, 0) || 0
+    const itemPrice = Number(item.size_price) || Number(item.products?.price) || 0;
+    return total + itemPrice * item.quantity;
+  }, 0) || 0;
 
   const shippingFee = 0
 

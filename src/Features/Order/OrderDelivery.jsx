@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useUserDetailed } from "../../Services/apiUsers";
+import { useUserDetailed } from "../../Hooks/useUserProfile";
 import { useUser } from "../Authentication/useUser";
 import { useSelector } from "react-redux";
 import { useCartItem } from "../Cart/useCartItems";
@@ -11,6 +11,7 @@ import MiniLoader from "../../ui/MiniLoader";
 import { createOrderItems } from "../../Services/apiOrder";
 import { v4 as uuidv4 } from 'uuid';
 import { useDeleteMultipleCartItem } from "./useDeleteMultipleCartItem";
+import { checkoutSchema } from "../../Validation/schemas";
 import styled from "styled-components";
 
 const Container = styled.div`
@@ -210,37 +211,77 @@ export default function  OrderDelivery(){
   const orderStatus = "not paid"
 
   async function handlePlaceOrder(){
-    try{
-      if(checkedCartItems.length === 0) return toast("Please select items to order in your cart")
-      if(!newAddress && !shippingAddress || !newPhoneNumber && !phoneNumber) return toast("Please enter shipping details")
-      if(newAddress && shippingAddress) return toast("Please use only one address")
-      if(newPhoneNumber && phoneNumber) return toast("Please use only one phone number")
-      if(!zipCode || zipCode.length !== 6) return toast("Please input a valid zipcode")
-      if(newPhoneNumber.length >= 11 && newPhoneNumber.length <= 13) return toast("Please input a valid phone number")
+    try {
+      if (!checkedCartItems || checkedCartItems.length === 0) {
+        return toast.error("Please select items to order in your cart");
+      }
 
-      const orderId = uuidv4()+formattedDate+formattedTime;
+      if ((!newAddress && !shippingAddress) || (!newPhoneNumber && !phoneNumber)) {
+        return toast.error("Please provide both shipping address and contact phone number");
+      }
 
-      const orderDetails = await createOrder({userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName: fullNameDisplay, userEmail, contactInfo})
-        
-        if(!orderDetails?.id){
-          throw new Error("Order ID not returned");
-        }
+      if (newAddress && shippingAddress) {
+        return toast.error("Please use either saved or new address, not both");
+      }
+
+      if (newPhoneNumber && phoneNumber) {
+        return toast.error("Please use either saved or new phone number, not both");
+      }
+
+      // Strict client-side validation using Zod
+      const checkoutData = {
+        fullName: fullNameDisplay || "Customer",
+        userEmail: userEmail || "",
+        shippingAddress: shipTo,
+        contactInfo: contactInfo,
+        zipCode: zipCode,
+        totalPrice: Number(totalPrice),
+        items: checkedCartItems.map((item) => ({
+          product_id: item.product_id,
+          product_name: item.products?.name || "Product",
+          quantity: item.quantity,
+          price: item.products?.price || 0,
+          size: item.size,
+        })),
+      };
+
+      const result = checkoutSchema.safeParse(checkoutData);
+      if (!result.success) {
+        const firstError = result.error.errors[0]?.message || "Invalid order information";
+        return toast.error(firstError);
+      }
+
+      const orderId = uuidv4() + formattedDate.replace(/\s+/g, '') + formattedTime.replace(/:/g, '');
+
+      const orderDetails = await createOrder({
+        userId,
+        totalPrice: result.data.totalPrice,
+        orderStatus,
+        zipCode: result.data.zipCode,
+        shipTo: result.data.shippingAddress,
+        orderId,
+        fullName: result.data.fullName,
+        userEmail: result.data.userEmail,
+        contactInfo: result.data.contactInfo,
+      });
+
+      if (!orderDetails?.id) {
+        throw new Error("Order creation failed on server");
+      }
 
       await createOrderItems(userId, orderId, checkedCartItems);
 
-      navigate("/order")
+      toast.success("Order placed! Proceed to checkout.");
+      navigate("/order");
 
-      if(checkedCartItems.length > 0) {
+      if (checkedCartItems.length > 0) {
         await deleteMultipleCartItem({ userId, checkedCartItems });
       }
-      
     } catch (error) {
-      if(error) throw  new Error(error.message)
+      toast.error(error.message || "Failed to place order");
     }
   }
 
-  console.log(userDetailsItem)
-  
   return (
     <Container>
       <MenuHeading>Delivery <span>Details_</span> </MenuHeading>
