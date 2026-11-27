@@ -251,7 +251,7 @@ export default function LoginForm() {
   function fillDemo(email, pass) {
     setValue("email", email, { shouldValidate: true });
     setValue("password", pass, { shouldValidate: true });
-    toast("Demo credentials filled — click Sign In!", { icon: "✨" });
+    toast("Demo credentials filled — click Sign In!");
   }
 
   return (
@@ -259,7 +259,7 @@ export default function LoginForm() {
       <Form onSubmit={handleSubmit(onSubmit)}>
         <FormHeader>
           <h2>Welcome Back</h2>
-          <p>Sign in to access your curated ritual & order history</p>
+          <p>Sign in to view your cart and order history</p>
         </FormHeader>
 
         <CustomInput
@@ -309,7 +309,7 @@ export default function LoginForm() {
         </OptionsRow>
 
         <SubmitButton type="submit" disabled={isLoading}>
-          {isLoading ? <MiniLoader /> : "Sign In to Sanctuary"}
+          {isLoading ? <MiniLoader /> : "Sign In"}
         </SubmitButton>
 
         {/* DEMO QUICK-FILL FOR EASY TESTING */}

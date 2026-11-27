@@ -217,7 +217,7 @@ export default function Login({ defaultTab }) {
               Forever <span>Radiant</span>
             </h1>
           </Link>
-          <div className="badge">Botanical Luxury Sanctuary</div>
+          <div className="badge">Botanical Skin &amp; Hair Care</div>
         </BrandHeader>
 
         <SegmentedTabs>
@@ -245,13 +245,13 @@ export default function Login({ defaultTab }) {
 
         <TrustFooter>
           <div className="trust-item">
-            <FaLeaf /> 100% Organic Purity
+            <FaLeaf /> Clean Botanicals
           </div>
           <div className="trust-item">
-            <FaShieldAlt /> Enterprise Secure
+            <FaShieldAlt /> Protected Checkout
           </div>
           <div className="trust-item">
-            <FaTruck /> Concurrency-Protected
+            <FaTruck /> Tracked Delivery
           </div>
         </TrustFooter>
       </AuthCard>

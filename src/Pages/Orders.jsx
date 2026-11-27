@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { useCheckout } from "../Hooks/useCheckout";
 import styled from "styled-components";
 import { useState } from "react";
+/* Preserved for local sandbox/key override debugging if VITE_FLUTTERWAVE_KEY is unset:
 import {
   FaCreditCard,
   FaKey,
@@ -13,6 +14,7 @@ import {
   FaCheckCircle,
   FaFlask,
 } from "react-icons/fa";
+*/
 
 const Header = styled.div`
   display: flex;
@@ -62,7 +64,9 @@ const Order = styled.div`
   display: flex;
   flex-direction: column;
   gap: 5px;
-  background-color: whitesmoke;
+  background-color: var(--bg-surface-soft, whitesmoke);
+  border: 1px solid var(--border-color, #e5e7eb);
+  border-radius: 8px;
   padding: 15px;
 `
 const OrderDetails = styled.div`
@@ -179,6 +183,11 @@ export default function Orders() {
               <h3>Order #{index + 1}</h3>
               <h5>Order ID: {order.order_id}</h5> 
               <p>Total Price: ₦{order.total_price}</p>
+              {order.promo_code && Number(order.discount_amount) > 0 && (
+                <p style={{ color: "#16a34a", fontSize: "1.2rem" }}>
+                  Promo Applied: {order.promo_code} (-₦{Number(order.discount_amount).toLocaleString()})
+                </p>
+              )}
               <Status>
                 <p>Payment:</p> 
                 <div>
@@ -229,6 +238,7 @@ export default function Orders() {
   );
 }
 
+/* Preserved Sandbox / Custom Key Override Modal Styles (commented out since VITE_FLUTTERWAVE_KEY is configured in deployment)
 const ModalOverlay = styled.div`
   position: fixed;
   inset: 0;
@@ -438,8 +448,59 @@ const SandboxActionBtn = styled.button`
     cursor: not-allowed;
   }
 `;
+*/
 
 function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
+  // Direct Flutterwave integration using deployment environment public key
+  const config = {
+    public_key: (import.meta.env.VITE_FLUTTERWAVE_KEY || "").trim(),
+    tx_ref: `${order?.order_id || "fr"}-${Date.now()}`,
+    amount: Number(order?.total_price) || 0,
+    currency: "NGN",
+    payment_options: "card,mobilemoney,ussd",
+    customer: {
+      email: userEmail || "customer@foreverradiant.com",
+      phone_number: order?.contact || "08000000000",
+      name: fullName || "Valued Customer",
+    },
+    customizations: {
+      title: "Forever Radiant Inc.",
+      description: "Payment for ordered items",
+      logo: "https://dncqfwbhphbhudkwerlt.supabase.co/storage/v1/object/public/ui-images/logo1.png",
+    },
+  };
+
+  const handleFlutterPayment = useFlutterwave(config);
+
+  function handlePayNow() {
+    if (!config.public_key) {
+      toast.error("Payment gateway key is not configured.");
+      return;
+    }
+
+    handleFlutterPayment({
+      callback: async (response) => {
+        closePaymentModal();
+        if (response.status === "completed" || response.status === "successful") {
+          await executeCheckout({
+            orderId: order?.order_id,
+            items: order?.order_items || [],
+          });
+        }
+      },
+      onClose: () => {
+        toast("Payment cancelled");
+      },
+    });
+  }
+
+  return (
+    <Button onClick={handlePayNow}>
+      Pay with Flutterwave
+    </Button>
+  );
+
+  /* Preserved custom key override & sandbox modal flow (commented out per user instruction):
   const envKey = import.meta.env.VITE_FLUTTERWAVE_KEY || "";
   const [customKey, setCustomKey] = useState(() => {
     return localStorage.getItem("FLUTTERWAVE_PUBLIC_KEY") || "";
@@ -512,7 +573,6 @@ function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
     setCustomKey(trimmed);
     setIsModalOpen(false);
     toast.success("Flutterwave public key saved! Launching payment...");
-    // Trigger payment with new key
     setTimeout(() => {
       window.location.reload();
     }, 500);
@@ -553,7 +613,7 @@ function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
             fontWeight: 500,
           }}
         >
-          {isKeyConfigured ? "⚙️ Payment Gateway Settings" : "⚠️ Key Required / Sandbox Test Mode"}
+          {isKeyConfigured ? "Payment Gateway Settings" : "Key Required / Sandbox Test Mode"}
         </button>
       </div>
 
@@ -583,7 +643,6 @@ function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
                 </NoticeAlert>
               )}
 
-              {/* Option 1: Real Flutterwave API Key */}
               <SectionOption>
                 <h4>
                   <FaKey style={{ color: "#d97706" }} /> Option 1: Connect Your Flutterwave Key
@@ -612,7 +671,6 @@ function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
                 </form>
               </SectionOption>
 
-              {/* Option 2: Instant Sandbox Simulation */}
               <SectionOption style={{ background: "#ecfdf5", borderColor: "#a7f3d0" }}>
                 <h4 style={{ color: "#065f46" }}>
                   <FaFlask style={{ color: "#059669" }} /> Option 2: Instant Test Mode (Sandbox)
@@ -634,6 +692,7 @@ function PayOrderButton({ order, userEmail, fullName, executeCheckout }) {
       )}
     </>
   );
+  */
 } 
 
 function OrderItem({ item }) {

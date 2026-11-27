@@ -458,6 +458,8 @@ const NewsletterSection = styled.section`
       padding: 12px 16px;
       border: 1px solid var(--border-color);
       border-radius: 6px;
+      background-color: var(--bg-card);
+      color: var(--text-primary);
       font-size: 0.95rem;
       outline: none;
 
@@ -505,13 +507,13 @@ export default function Home() {
       <Hero>
         <HeroContent>
           <Pill>
-            <HiOutlineSparkles /> Clean, Botanical Luxury
+            <HiOutlineSparkles /> Small-Batch Botanical Care
           </Pill>
           <HeroTitle>
-            Awaken Your <span>Natural Radiance</span> with Botanical Mastery
+            Daily Care Rooted in <span>Natural Botanicals</span>
           </HeroTitle>
           <HeroSubtitle>
-            Indulge in physician-tested organic skincare and haircare elixirs. Crafted in artisanal small batches to nourish, heal, and illuminate your authentic beauty.
+            Cold-pressed oils, unrefined shea, and gentle botanical cleansers formulated to nourish dry skin and keep your hair healthy without harsh fillers.
           </HeroSubtitle>
           <ButtonGroup>
             <PrimaryBtn to="/collection">
@@ -530,8 +532,8 @@ export default function Home() {
               <HiOutlineHeart />
             </div>
             <div>
-              <h5>100% Organic Extracts</h5>
-              <p>Zero parabens, 100% cruelty-free</p>
+              <h5>Plant-Based Formulas</h5>
+              <p>No parabens or synthetic dyes</p>
             </div>
           </FloatingCard>
         </HeroImageContainer>
@@ -543,39 +545,39 @@ export default function Home() {
           <div className="feature-icon">
             <HiOutlineSparkles />
           </div>
-          <h4>Clean & Botanical Formulas</h4>
-          <p>Hand-selected organic botanicals formulated without harsh parabens or artificial fillers.</p>
+          <h4>Pure Plant Oils</h4>
+          <p>Cold-pressed botanicals and unrefined shea butter blended without sulfates or mineral oil.</p>
         </FeatureCard>
 
         <FeatureCard>
           <div className="feature-icon">
             <HiOutlineShieldCheck />
           </div>
-          <h4>Dermatologically Validated</h4>
-          <p>Carefully balanced pH formulations crafted to nurture sensitive skin and promote scalp health.</p>
+          <h4>Made for Daily Routines</h4>
+          <p>Gentle pH-balanced formulas suited for sensitive skin and protective haircare.</p>
         </FeatureCard>
 
         <FeatureCard>
           <div className="feature-icon">
             <HiOutlineTruck />
           </div>
-          <h4>Express Insured Delivery</h4>
-          <p>Fast, direct-to-door nationwide delivery with temperature-controlled protective packaging.</p>
+          <h4>Tracked Delivery</h4>
+          <p>Carefully sealed bottles packed safely for reliable nationwide shipping.</p>
         </FeatureCard>
 
         <FeatureCard>
           <div className="feature-icon">
             <HiOutlineHeart />
           </div>
-          <h4>Sustainable & Ethical</h4>
-          <p>Recyclable apothecary packaging and ethically harvested ingredients empowering rural farmers.</p>
+          <h4>Fresh Small Batches</h4>
+          <p>Prepared in small runs with responsibly sourced ingredients from local suppliers.</p>
         </FeatureCard>
       </FeaturesGrid>
 
       {/* 3. FEATURED PRODUCTS PREVIEW */}
       <section>
         <SectionHeading>
-          <h2>Featured <span>Elixirs_</span></h2>
+          <h2>Featured <span>Products_</span></h2>
           <Link to="/collection">
             View All ({products?.length || 0}+ Items) &rarr;
           </Link>
@@ -601,16 +603,16 @@ export default function Home() {
       {/* 4. MARKETING / PROMO BANNER */}
       <PromoBanner>
         <div>
-          <h2>The Radiant Glow Ritual</h2>
+          <h2>Save 15% on Your Routine</h2>
           <p>
-            Pair our best-selling botanical hair oil with rejuvenating aloe skin therapy. Experience 24-hour hydration and natural luminance.
+            Pair our botanical hair oil with soothing aloe skin care. Apply code RADIANT15 in your cart to take 15% off your order.
           </p>
           <div className="promo-code">
             USE CODE: <strong>RADIANT15</strong> FOR 15% OFF
           </div>
           <div>
             <BannerActionBtn to="/collection">
-              Claim Your Offer
+              Shop Collection
             </BannerActionBtn>
           </div>
         </div>
@@ -631,15 +633,15 @@ export default function Home() {
       {/* 5. TESTIMONIALS */}
       <section>
         <SectionHeading>
-          <h2>Loved by <span>Thousands_</span></h2>
-          <span style={{ fontSize: "0.95rem", color: "var(--text-muted)" }}>Verified Customer Experiences</span>
+          <h2>Customer <span>Feedback_</span></h2>
+          <span style={{ fontSize: "0.95rem", color: "var(--text-muted)" }}>Verified Customer Orders</span>
         </SectionHeading>
 
         <TestimonialsGrid>
           <TestimonialCard>
             <div className="stars">★★★★★</div>
             <blockquote>
-              "The botanical hair oil transformed my edges and scalp within three weeks. It’s light, smells heavenly, and genuinely works."
+              "The botanical hair oil helped my edges fill in within a few weeks. It absorbs well without leaving heavy buildup on my scalp."
             </blockquote>
             <div className="author">
               <img src="/Images/ui/testimonial-1.jpg" alt="Amina K." />
@@ -653,7 +655,7 @@ export default function Home() {
           <TestimonialCard>
             <div className="stars">★★★★★</div>
             <blockquote>
-              "I have hyper-sensitive skin and everything used to break me out. Forever Radiant products are the only formulas that calm my skin."
+              "I have reactive skin and most scented lotions break me out. These formulas keep my skin calm and moisturized through the day."
             </blockquote>
             <div className="author">
               <img src="/Images/ui/testimonial-2.jpg" alt="Chioma E." />
@@ -667,7 +669,7 @@ export default function Home() {
           <TestimonialCard>
             <div className="stars">★★★★★</div>
             <blockquote>
-              "Enterprise quality packaging and customer support. The checkout was seamless, and the delivery arrived in less than 48 hours."
+              "Everything arrived sealed properly with zero leaks, and checkout was quick. Got my package in Port Harcourt within two days."
             </blockquote>
             <div className="author">
               <img src="/Images/ui/testimonial-3.jpg" alt="David O." />
@@ -682,9 +684,9 @@ export default function Home() {
 
       {/* 6. NEWSLETTER SUBSCRIPTION */}
       <NewsletterSection>
-        <h3>Join the Radiant Circle</h3>
+        <h3>Restock &amp; Drop Alerts</h3>
         <p>
-          Subscribe to receive exclusive access to small-batch seasonal drops, skincare tips from our dermatologists, and member-only pricing.
+          Sign up to hear when fresh batches restock or seasonal offers go live.
         </p>
         <form onSubmit={handleNewsletterSubmit}>
           <input

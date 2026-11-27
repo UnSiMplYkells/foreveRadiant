@@ -174,16 +174,3 @@ export async function uploadProductImage(file) {
 
   return publicUrlData.publicUrl;
 }
-
-export async function updateAvailable(productId, productRemainder) {
-  const { data, error } = await supabase
-    .from("products")
-    .update({ available: productRemainder })
-    .eq("id", productId)
-    .select()
-    .single();
-
-  if (error) console.error("Error updating status:", error.message);
-
-  return data;
-}

@@ -1,250 +1,183 @@
-# ✨ Forever Radiant — Enterprise Botanical E-Commerce & Analytics Platform
+# Forever Radiant (v2.0)
 
-[![React 18](https://img.shields.io/badge/React-18.x-61dafb.svg?logo=react)](https://react.dev/)
-[![Vite](https://img.shields.io/badge/Vite-6.x-646cff.svg?logo=vite)](https://vitejs.dev/)
-[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20%26%20RLS-3ecf8e.svg?logo=supabase)](https://supabase.com/)
-[![TanStack Query](https://img.shields.io/badge/TanStack%20Query-v5-ff4154.svg?logo=reactquery)](https://tanstack.com/query)
-[![Zod](https://img.shields.io/badge/Zod-Schema%20Validation-3068b7.svg?logo=zod)](https://zod.dev/)
-[![Recharts](https://img.shields.io/badge/Recharts-Analytics%20%26%20Charts-22b5bf.svg)](https://recharts.org/)
+Full-stack botanical skincare and haircare e-commerce platform built with React, Vite, Supabase (PostgreSQL, Auth, Storage, RPCs, Edge Functions), TanStack Query, Redux Toolkit, Recharts, Zod, and Flutterwave.
 
-**Forever Radiant** is a luxury botanical skincare and wellness e-commerce platform re-engineered from the ground up to meet enterprise standards. It combines an aesthetic storefront experience with high-concurrency inventory locking, role-based access control, dynamic multi-size product pricing, interactive Recharts analytics, and genuine database-driven customer reviews.
+**Live Storefront:** [https://foreveradiant.netlify.app/home](https://foreveradiant.netlify.app/home)  
+**Repository:** [https://github.com/UnSiMplYkells/foreveRadiant](https://github.com/UnSiMplYkells/foreveRadiant)
 
 ---
 
-## 🌿 Table of Contents
+## Table of Contents
 
-- [Architectural Overview](#-architectural-overview)
-- [Key Enterprise Features](#-key-enterprise-features)
-  - [1. Dynamic Multi-Size & Pricing Variants](#1-dynamic-multi-size--pricing-variants)
-  - [2. Concurrency-Safe Inventory (Pessimistic Locking RPC)](#2-concurrency-safe-inventory-pessimistic-locking-rpc)
-  - [3. Order Fulfillment Pipeline & Lifecycle](#3-order-fulfillment-pipeline--lifecycle)
-  - [4. Executive Admin Analytics & 30-Day RPC Trends (Recharts)](#4-executive-admin-analytics--30-day-rpc-trends-recharts)
-  - [5. Inventory Intelligence: Top Sellers & Low Stock Alerts](#5-inventory-intelligence-top-sellers--low-stock-alerts)
-  - [6. Genuine Backend Reviews & Ratings](#6-genuine-backend-reviews--ratings)
-  - [7. Role-Based Access Control (RBAC) & Context Navigation](#7-role-based-access-control-rbac--context-navigation)
-  - [8. Botanical Dark & Light Mode](#8-botanical-dark--light-mode)
-  - [9. Strict Schema Validation (Zod DTOs)](#9-strict-schema-validation-zod-dtos)
-- [Database Schema & Migrations](#-database-schema--migrations)
-- [Application Route Sitemap](#-application-route-sitemap)
-- [Local Setup & Getting Started](#-local-setup--getting-started)
-- [Demo Credentials](#-demo-credentials)
-- [Production Build & Verification](#-production-build--verification)
+- [Architectural Overview](#architectural-overview)
+- [Core Engineering Features](#core-engineering-features)
+- [Database Schema & Migrations](#database-schema--migrations)
+- [Application Routes](#application-routes)
+- [Local Setup](#local-setup)
+- [Demo Accounts](#demo-accounts)
+- [Scripts & Verification](#scripts--verification)
 
 ---
 
-## 🏛️ Architectural Overview
+## Architectural Overview
 
 ```
-                      ┌───────────────────────────────────────────┐
-                      │            Forever Radiant Web App        │
-                      │           (React 18 / Vite / Router)      │
-                      └─────────────────────┬─────────────────────┘
-                                            │
-               ┌────────────────────────────┼────────────────────────────┐
-               ▼                            ▼                            ▼
-  ┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-  │   Storefront Client     │  │   Cart & Order State    │  │     Admin Management    │
-  │ • Category Filtering    │  │ • Redux Toolkit (Cart)  │  │ • Product Catalog (CRUD)│
-  │ • Size & Price Pills    │  │ • Size Price Resolution │  │ • Variant Configurator  │
-  │ • Real Review Feed      │  │ • Checkout Locking RPC  │  │ • Product Insights      │
-  │ • Botanical Dark Mode   │  │ • Webhook Idempotency   │  │ • Recharts Reporting    │
-  └────────────┬────────────┘  └────────────┬────────────┘  └────────────┬────────────┘
-               │                            │                            │
-               └────────────────────────────┼────────────────────────────┘
-                                            ▼
-                           ┌──────────────────────────────────┐
-                           │      TanStack React Query v5     │
-                           │   (Caching, Optimistic Updates)  │
-                           └────────────────┬─────────────────┘
-                                            ▼
-                           ┌──────────────────────────────────┐
-                           │        Supabase BaaS / SQL       │
-                           ├──────────────────────────────────┤
-                           │ • PostgreSQL Database with RLS   │
-                           │ • Pessimistic Locking RPCs       │
-                           │ • Supabase Auth & JWT Sessions   │
-                           │ • Storage Bucket (`products`)    │
-                           │ • Edge Functions (Webhooks/Email)│
-                           └──────────────────────────────────┘
+                     ┌───────────────────────────────────────────┐
+                     │          Forever Radiant Web App          │
+                     │     React 18 · Vite 6 · React Router 7    │
+                     └─────────────────────┬─────────────────────┘
+                                           │
+         ┌─────────────────────────────────┼─────────────────────────────────┐
+         ▼                                 ▼                                 ▼
+┌──────────────────────┐        ┌──────────────────────┐        ┌──────────────────────┐
+│ Storefront Client    │        │ Cart & Checkout      │        │ Admin Suite (/admin) │
+│ • Catalog Pagination │        │ • Redux Cart Slice   │        │ • Product & Size CRUD│
+│ • Size/Price Variants│        │ • Promo Code RPC     │        │ • Order Guardrails   │
+│ • Verified Reviews   │        │ • Flutterwave Pay    │        │ • Promo Campaigns    │
+│ • Portal Mobile Nav  │        │ • Locking RPC        │        │ • Recharts Analytics │
+└──────────┬───────────┘        └──────────┬───────────┘        └──────────┬───────────┘
+           └───────────────────────────────┼───────────────────────────────┘
+                                           ▼
+                     ┌───────────────────────────────────────────┐
+                     │         TanStack React Query v5           │
+                     │       Cache Management & Mutations        │
+                     └─────────────────────┬─────────────────────┘
+                                           ▼
+                     ┌───────────────────────────────────────────┐
+                     │        Supabase (PostgreSQL + BaaS)       │
+                     │ • Row-Level Security (RLS) & is_admin()   │
+                     │ • Security-Definer RPCs & Triggers        │
+                     │ • Supabase Auth (Email & OAuth)           │
+                     │ • Storage Buckets & Edge Functions        │
+                     └───────────────────────────────────────────┘
 ```
 
 ---
 
-## 🚀 Key Enterprise Features
+## Core Engineering Features
 
-### 1. Dynamic Multi-Size & Pricing Variants
-- **Admin Configuration**: When adding or updating products in the Admin portal, administrators can add, edit, or remove multiple size options (e.g., `50ml`, `100ml`, `250ml`, `100g`, `250g`, `500g`) and assign distinct pricing for each variant.
-- **Quick Preset Shortcuts**: One-click preset chips allow instant creation of standard volume and weight variants.
-- **Storefront Dynamic Pricing**: On the product details page (`FullProductDetails.jsx`), selecting any size pill dynamically recalculates and animates the displayed price.
-- **Cart & Checkout Accuracy**: Selected size labels and their custom prices are persisted in the `public.cart` table (`size` and `size_price`) and accurately calculated in the subtotal, order summary, and order history.
+### 1. Concurrency-Safe Checkout (`FOR UPDATE` Row Locking)
+- Checkout executes the PostgreSQL `SECURITY DEFINER` RPC `process_order_checkout(p_order_id, p_items)` rather than mutating stock from the browser.
+- Inventory rows in `public.products` are locked sequentially with `SELECT ... FOR UPDATE`, rejecting orders with insufficient stock before committing and rolling back atomically on failure.
 
-### 2. Concurrency-Safe Inventory (Pessimistic Locking RPC)
-- High-volume flash sales can cause overselling when multiple shoppers checkout simultaneously.
-- To prevent race conditions, the checkout flow triggers the PostgreSQL RPC function `process_order_checkout`.
-- Uses `SELECT ... FOR UPDATE` pessimistic row locking:
-  ```sql
-  SELECT available INTO current_stock
-  FROM public.products
-  WHERE id = item.product_id
-  FOR UPDATE;
-  ```
-- If stock is insufficient, the transaction immediately rolls back and raises an exception: `"Insufficient stock for product ID: ..."`. Otherwise, it atomically decrements the inventory.
+### 2. Decoupled Payment Verification & Order Fulfillment
+- Payment state (`is_paid`, `payment_status`, `paid_at`, `payment_method`) is stored separately from fulfillment `status` (`pending` → `processing` → `shipped` → `delivered`) so advancing delivery stages never overwrites payment history.
+- Both frontend controls (`AdminOrders.jsx`, `apiOrder.js`) and PostgreSQL triggers (`trg_check_order_payment_before_fulfillment`) block transitioning unpaid orders to `shipped` or `delivered`.
+- Customer checkout (`Orders.jsx`) integrates `flutterwave-react-v3` and checks `is_paid` / `payment_status` independently of delivery status.
 
-### 3. Order Fulfillment Pipeline & Lifecycle
-- **Visual Status Pipeline**: In the Admin Dashboard's Orders table, administrators manage order lifecycles through a defined fulfillment workflow:
-  ```
-  Pending ➔ Processing ➔ Shipped ➔ Delivered
-  ```
-- **Dynamic Badge Visual Indicators**:
-  - `Pending`: Yellow badge (`#fef9c3` background, `#a16207` text, `#fde047` border).
-  - `Processing`: Warm Amber/Orange badge (`#ffedd5` background, `#c2410c` text, `#fdba74` border).
-  - `Shipped`: Blue badge (`#e0f2fe` background, `#0369a1` text, `#7dd3fc` border).
-  - `Delivered`: Emerald Green badge (`#dcfce7` background, `#15803d` text, `#86efac` border).
-- **Two-Way Action Controls**: Each order provides a direct `<select>` dropdown to immediately transition to any state, alongside a 1-click advance pipeline button (`Start Processing ➔`, `Ship Order 🚚`, `Mark Delivered ✓`). All mutations execute through `useUpdateOrderStatus.js` and immediately invalidate React Query caches.
+### 3. Promo Code Engine (Manual & Time-Based)
+- Storefront cart totals (`CartTotals.jsx`) validate promo codes via `validate_promo_code(p_code)` and atomically increment redemptions via `redeem_promo_code(p_code)`, persisting `promo_code` and `discount_amount` onto `public.orders`.
+- Administrators manage campaigns from `/admin/promos` (`AdminPromos.jsx`), supporting both **manual codes** (active until toggled off, such as `RADIANT15`) and **time-based codes** (auto-expiring at a configured timestamp), alongside optional usage caps.
 
-### 4. Executive Admin Analytics & 30-Day RPC Trends (Recharts)
-- Accessible directly within the **"Visual Analytics & Reporting"** tab in the Admin Dashboard (`AdminReporting.jsx`).
-- **PostgreSQL Server Aggregations (Supabase RPCs)**:
-  - `get_admin_kpis()`: Calculates 30-day Total Gross Revenue, Total Orders, and Average Order Value (AOV) directly on PostgreSQL.
-  - `get_sales_trends()`: Uses `generate_series` to compute a continuous 30-day timeline of daily revenue and order counts without missing dates.
-- **Top Row Styled KPI Cards**:
-  - 30-Day Gross Revenue (₦)
-  - 30-Day Total Orders Count
-  - Average Order Value (AOV)
-  - Vault Inventory Units (across all registered SKUs)
-  - Low Stock Warning SKUs (&lt; 10 units)
-- **Interactive Visualizations**:
-  - **30-Day Revenue Trends**: Interactive Recharts `LineChart` with custom currency tooltips, data point dots, and an optional toggle to overlay the daily orders count line.
-  - **Category Gross Share**: Interactive `PieChart` / Donut chart showing botanical revenue distribution.
-  - **Top 5 Best-Sellers**: Horizontal `BarChart` highlighting the highest revenue-generating products.
-  - **Recent Orders Audit Table**: Real-time transaction feed with customer names, timestamps, order amounts, and fulfillment status badges.
+### 4. Verified-Buyer Review Gating
+- Product reviews in `public.reviews` are restricted to customers who actually purchased the product.
+- Enforced at both the UI layer (`Reviews.jsx`, `apiReviews.js`) and database layer via `has_user_purchased_product(user_id, product_id)` and the `BEFORE INSERT` trigger `trg_check_review_verified_buyer`.
 
-### 5. Inventory Intelligence: Top Sellers & Low Stock Alerts
-- Accessible via the **"Inventory Intelligence"** button in the Admin header or by clicking **"Insights"** on any product row (`ProductInsightsModal.jsx`):
-  - **Top Sellers**: A ranked list (🥇 `#1`, 🥈 `#2`, 🥉 `#3`...) of the most purchased products store-wide, showing total units sold, gross sales revenue, remaining vault stock, and an "Inspect" shortcut.
-  - **Low Stock Alerts Warning Block**: A prominent orange/red bordered alert card (`border: 2px solid #ea580c; background: #fff7ed`) identifying any SKU where `available < 10` units, complete with instant 1-click restock action buttons (`+15 Units`, `+30 Units`) that immediately persist to PostgreSQL via `useUpdateProduct`.
-  - **SKU Deep Dive**: Variant-level sales charts, rating distribution (5★ to 1★), and genuine customer feedback.
+### 5. Role-Protected Multi-Page Admin Portal
+- Guarded by `AdminRoute.jsx` (`public.users.role = 'admin'` checked via `is_admin()` RLS helper) across dedicated nested routes:
+  - `/admin`: Store overview metrics, low-stock notices, and recent order activity.
+  - `/admin/products`: Catalog CRUD, storage image uploads, multi-size pricing variants (`50ml`, `100ml`, `250ml`, etc.), and per-SKU insight modals (`ProductInsightsModal.jsx`).
+  - `/admin/orders`: Filterable fulfillment pipeline with manual payment verification and unpaid shipping locks.
+  - `/admin/analytics`: 30-day revenue trends, top-yielding products, and category distribution rendered with **Recharts** via `get_admin_kpis()` and `get_sales_trends()` RPCs.
+  - `/admin/promos`: Issue, schedule, pause, or edit storewide discount codes.
+  - `/admin/profile`: Admin account details and password update view.
 
-### 5. Genuine Backend Reviews & Ratings
-- All star ratings and customer feedback are stored in the PostgreSQL table `public.reviews`.
-- **Zero fake/mock data**: Ratings on storefront cards, product pages, and admin insights reflect live database rows.
-- Authenticated customers can submit verified reviews with a rating (1-5), review title, and detailed feedback.
-- Non-authenticated visitors see existing reviews with an elegant prompt inviting them to log in before leaving a review.
-
-### 6. Role-Based Access Control (RBAC) & Context Navigation
-- User profiles in `public.users` include a `role` column (`'customer'` or `'admin'`).
-- **Protected Admin Route**: `/admin` is guarded by `ProtectedRoute.jsx`. Non-admin users are denied access and redirected to the home storefront.
-- **Context-Aware Navigation**:
-  - **Public Visitors**: Home, About Us, Contact Us.
-  - **Authenticated Customers**: Home, Collection, Orders (with shopping bag badge and account avatar in top header).
-  - **Authenticated Admins**: Quick shortcut to Admin Dashboard in addition to customer views.
-
-### 7. Botanical Dark & Light Mode
-- Styled using luxury earthy and botanical tones:
-  - Terracotta brown (`#7c2d12` / `#ea580c`)
-  - Deep sage & forest greens (`#15803d` / `#3d6734`)
-  - Warm amber cream accents (`#fef3c7`)
-- Respects system preferences and allows instant 1-click toggling between light and dark modes with persistent local storage.
-
-### 8. Strict Schema Validation (Zod DTOs)
-- All forms use **Zod** schemas in `src/Validation/schemas.js` integrated with `react-hook-form`:
-  - `productSchema`: Validates name, price, stock, category, description, image URLs, and dynamic size variant arrays.
-  - `loginSchema` & `registerSchema`: Validates password complexity, name trimming, and email formatting.
-  - `checkoutSchema`: Validates shipping address, phone contact, and zip codes.
+### 6. Validation, Responsive Navigation & Theming
+- **Runtime DTO Validation:** Product payloads, registration/login forms, checkout delivery fields, reviews, and promo code definitions are validated with **Zod** (`src/Validation/schemas.js`).
+- **Portal Mobile Navigation:** `MobileDrawer.jsx` renders via `createPortal(..., document.body)` so sticky header `backdrop-filter` stacking contexts never clip mobile overlays.
+- **Light & Dark Mode:** CSS custom property theme tokens managed in `DarkModeContext.jsx` and `GlobalStyles.js`.
 
 ---
 
-## 🗄️ Database Schema & Migrations
+## Database Schema & Migrations
 
-All schema changes are versioned in `supabase/migrations/`:
+SQL migrations are located in `supabase/migrations/`:
 
-| Migration File | Description |
+| Migration File | Purpose |
 | :--- | :--- |
-| `20261123220000_admin_kpi_and_sales_trends_rpc.sql` | PostgreSQL RPCs `get_admin_kpis()` and `get_sales_trends()` for executive 30-day analytics. |
-| `20261123210000_product_sizes_and_cart_pricing.sql` | Upgrades `public.cart.size` to `text` and adds `size_price numeric`. |
-| `20261123190000_checkout_pessimistic_lock.sql` | PostgreSQL RPC `process_order_checkout` with `SELECT ... FOR UPDATE`. |
-| `20261123180000_enterprise_storage_rls.sql` | Storage bucket `products` setup with public read and admin-only upload/delete policies. |
-| `20261123160000_user_role_and_profiles.sql` | Adds `role` (`customer` / `admin`) to `public.users` with automated auth signup trigger. |
-
-### Core Database Tables:
-1. **`public.products`**: Catalog items with structured JSON sizes `[{"size": "50ml", "price": 5000}, ...]`, category, inventory stock (`available`), and image arrays.
-2. **`public.users`**: Profiles linked to Supabase Auth (`auth.users.id`), with `role`, email, and full name.
-3. **`public.cart`**: Active customer carts supporting `size` (text) and `size_price` (numeric).
-4. **`public.orders`**: Order ledger with total price, fulfillment status, shipping address, contact, and placement date.
-5. **`public.order_items`**: Line items with product ID, captured unit price, size variant (`product_size_ml`), and quantity.
-6. **`public.reviews`**: Genuine customer star ratings (1-5), review title, description, and author.
+| `20261123000001_roles_and_profiles.sql` | Adds `role` (`customer`/`admin`), `is_admin()` helper, auth signup trigger, and RLS policies on `public.users` |
+| `20261123000002_concurrency_safe_inventory_rpc.sql` | Adds `process_order_checkout` RPC with `SELECT ... FOR UPDATE` row-level locking |
+| `20261123000003_storage_buckets.sql` | Configures `products` Supabase Storage bucket & access policies |
+| `20261123000004_payment_webhooks_and_idempotency.sql` | Adds `payment_events` tracking for webhook idempotency |
+| `20261123000005_order_email_trigger.sql` | Order notification trigger wiring |
+| `20261123173000_reviews_system.sql` | Creates `public.reviews` schema and RLS policies |
+| `20261123180000_fix_users_trigger.sql` | Auth profile sync adjustments |
+| `20261123210000_product_sizes_and_cart_pricing.sql` | Adds multi-size pricing support (`size` text, `size_price numeric`) on `public.cart` |
+| `20261123220000_admin_kpi_and_sales_trends_rpc.sql` | Adds `get_admin_kpis()` and `get_sales_trends()` analytics RPCs |
+| `20261123230000_enforce_order_payment_fulfillment_locks.sql` | Adds `is_paid`, `payment_method`, `paid_at` and trigger locking unpaid fulfillment |
+| `20261124000000_verified_purchaser_reviews.sql` | Adds `has_user_purchased_product` RPC and verified-buyer insert trigger |
+| `20261127000001_promo_codes_system.sql` | Creates `promo_codes` table, `validate_promo_code` / `redeem_promo_code` RPCs, order promo columns, and seeds `RADIANT15` |
 
 ---
 
-## 🗺️ Application Route Sitemap
+## Application Routes
 
-| Route Path | Access Level | Description |
+| Route | Access | Description |
 | :--- | :--- | :--- |
-| `/` | Public | Marketing landing page with hero banner, best-sellers, values, and newsletter |
-| `/about` | Public | Brand story, botanical sourcing ethics, and artisanal laboratory values |
-| `/contact` | Public | Customer concierge contact form and physical boutique location |
-| `/privacy-policy` | Public | Data protection, privacy principles, and terms |
-| `/collection` | Public / Auth | Full 52-product catalog with server pagination, category filters, and search |
-| `/productDetails/:productId` | Public / Auth | High-resolution gallery, size/price variant selection, and live reviews |
-| `/login` | Public | Modern authentication portal with login, registration, and 1-click test pills |
-| `/cart` | Authenticated | Interactive cart with item quantity adjustments and order subtotaling |
-| `/place-order` | Authenticated | Checkout drawer with Paystack payment gateway and pessimistic inventory locking |
-| `/orders` | Authenticated | Customer order history with tracking status and itemized sizes |
-| `/account` | Authenticated | User account details and logout controls |
-| `/admin` | **Admin Only** | Catalog CRUD, size configurator, Product Insights drawer, and Recharts Analytics |
+| `/home` | Public | Storefront landing page, featured products, promo banner (`RADIANT15`), and footer contact anchor (`#contact`) |
+| `/collection` | Public | Paginated catalog with category filtering |
+| `/productDetails/:productId` | Public | Product gallery, dynamic size/volume pricing, stock count, and verified customer reviews |
+| `/about` | Public | Brand overview and formulation principles |
+| `/privacyPolicy` (`/privacy-policy`) | Public | Privacy policy and terms |
+| `/login` / `/signup` | Public | Email/password & OAuth login/registration with Zod validation and demo quick-fill buttons |
+| `/cart` | Authenticated | Cart management, item selection, promo code entry, and total calculation |
+| `/place-order` | Authenticated | Order summary, delivery address selection, and checkout submission |
+| `/order` (`/orders` redirects) | Authenticated | Customer order history with separate payment and fulfillment statuses plus Flutterwave payment |
+| `/account` | Authenticated | Customer profile details, password update, and order link |
+| `/admin` | Admin Only | Admin overview dashboard |
+| `/admin/products` | Admin Only | Product & variant management + SKU insights |
+| `/admin/orders` | Admin Only | Order verification & fulfillment pipeline |
+| `/admin/analytics` | Admin Only | Recharts revenue, order trend, category share, and top-product charts |
+| `/admin/promos` | Admin Only | Issue and manage manual or time-limited promo codes |
+| `/admin/profile` | Admin Only | Administrator account and security settings |
 
 ---
 
-## 🛠️ Local Setup & Getting Started
+## Local Setup
 
 ### Prerequisites
-- [Node.js](https://nodejs.org/) (v18 or newer)
-- npm or yarn
+- Node.js v18+ and npm
 
-### 1. Clone & Install
+### 1. Install Dependencies
 ```bash
-git clone <repository-url>
-cd forever-radiant
+git clone https://github.com/UnSiMplYkells/foreveRadiant.git
+cd foreveRadiant
 npm install
 ```
 
-### 2. Environment Variables
-Create a `.env.local` file in the project root:
+### 2. Configure Environment Variables
+Copy `.env.example` to `.env.local` and supply your values:
 ```env
-VITE_SUPABASE_URL=https://dncqfwbhphbhudkwerlt.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_KEY=your-supabase-anon-key
+VITE_SUPABASE_API_URL=https://your-project-ref.supabase.co/rest/v1
+VITE_SUPABASE_STORAGE_URL=https://your-project-ref.supabase.co/storage/v1/object/public/avatars
+VITE_FLUTTERWAVE_KEY=FLWPUBK_TEST-your-flutterwave-public-key-here
 ```
 
-### 3. Start Development Server
+### 3. Run Development Server
 ```bash
 npm run dev
 ```
-Open [http://localhost:5173](http://localhost:5173) in your browser.
 
 ---
 
-## 🔑 Demo Credentials
+## Demo Accounts
 
-To experience both customer storefront and enterprise admin features, the login page features **1-click autofill test pills**:
+One-click quick-fill buttons are available on `/login` for testing both roles:
 
-| Role | Email | Password | Access Capabilities |
+| Role | Email | Password | Scope |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@foreverradiant.com` | `Password123!` | Full Admin Dashboard (`/admin`), Product Insights, Size Manager, Reporting Charts, Stock Adjustment |
-| **Customer** | `customer@foreverradiant.com` | `Password123!` | Full Storefront, Dynamic Size Selection, Cart, Order History, Customer Reviews |
+| **Admin** | `admin@foreverradiant.com` | `Password123!` | Access to `/admin/*` (products, orders, promos, analytics) and storefront |
+| **Customer** | `customer@foreverradiant.com` | `Password123!` | Cart, promo codes, checkout, order history, and verified reviews |
 
 ---
 
-## 📦 Production Build & Verification
+## Scripts & Verification
 
-To create a production-optimized build:
 ```bash
-npm run build
+npm run dev      # Start Vite development server
+npm run lint     # Run ESLint across the codebase
+npm run build    # Build production bundle to dist/
+npm run preview  # Preview production bundle locally
 ```
-Preview the production build locally:
-```bash
-npm run preview
-```
-
----
-
-*Designed and engineered with passion for botanical purity and enterprise software excellence.*

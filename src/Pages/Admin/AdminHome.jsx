@@ -13,9 +13,11 @@ import {
   FaCheckCircle,
   FaClock,
   FaLock,
+  FaTag,
 } from "react-icons/fa";
 import { getProduct } from "../../Services/apiProducts";
 import { useAllOrders } from "../../Hooks/useAllOrders";
+import { useAdminPromoCodes } from "../../Hooks/usePromos";
 import ProductFormModal from "../../Features/Admin/ProductFormModal";
 import ProductInsightsModal from "../../Features/Admin/ProductInsightsModal";
 import Loader from "../../ui/Loader";
@@ -158,7 +160,7 @@ const NavCardsSection = styled.div`
 
 const NavCardsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
 `;
 
@@ -383,8 +385,17 @@ export default function AdminHome() {
   });
 
   const { orders = [], isLoading: isOrdersLoading } = useAllOrders();
+  const { promoCodes = [] } = useAdminPromoCodes();
 
   if (isProductsLoading || isOrdersLoading) return <Loader />;
+
+  const activePromoCount = promoCodes.filter((p) => {
+    if (!p.is_active) return false;
+    if (p.mode === "timed" && p.expires_at && new Date(p.expires_at).getTime() <= Date.now()) {
+      return false;
+    }
+    return true;
+  }).length;
 
   const totalCatalogItems = allProducts.length;
   const totalStockUnits = allProducts.reduce((acc, p) => acc + (p.available ?? 0), 0);
@@ -409,7 +420,7 @@ export default function AdminHome() {
       <QuickActionsRow>
         <GreetingBox>
           <h2>Welcome back, Store Administrator</h2>
-          <p>Real-time enterprise overview across catalog items, order fulfillment, and visual reports</p>
+          <p>Live overview across catalog items, order fulfillment, and analytics</p>
         </GreetingBox>
 
         <ActionButtonsGroup>
@@ -426,7 +437,7 @@ export default function AdminHome() {
             onClick={() => setIsCreateModalOpen(true)}
             title="Create a new catalog product"
           >
-            <FaPlus /> + Add Product
+            <FaPlus /> Add Product
           </PrimaryBtn>
         </ActionButtonsGroup>
       </QuickActionsRow>
@@ -578,6 +589,28 @@ export default function AdminHome() {
             </div>
             <div className="card-footer">
               <span>View Financial Intelligence</span>
+              <FaArrowRight className="arrow-icon" />
+            </div>
+          </NavHubCard>
+
+          <NavHubCard to="/admin/promos" $iconBg="#fef3c7" $iconColor="#b45309" $pillBg="#ffedd5" $pillColor="#9a3412">
+            <div>
+              <div className="card-top">
+                <div className="icon-box">
+                  <FaTag />
+                </div>
+                <div className="card-heading">
+                  <h4>Promo Codes</h4>
+                  <span className="badge-pill">{activePromoCount} Active</span>
+                </div>
+              </div>
+              <p>
+                Issue storefront discount codes — choose between time-based expiring campaigns or permanent codes
+                that stay live until manually turned off.
+              </p>
+            </div>
+            <div className="card-footer">
+              <span>Manage Discounts</span>
               <FaArrowRight className="arrow-icon" />
             </div>
           </NavHubCard>

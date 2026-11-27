@@ -110,7 +110,9 @@ const variations = {
 };
 
 /* Styled button component */
-const Button = styled.button`
+const Button = styled.button.withConfig({
+  shouldForwardProp: (prop) => !["variation", "size"].includes(prop),
+})`
   border: none;
   border-radius: var(--border-radius-sm);
   box-shadow: var(--shadow-sm);

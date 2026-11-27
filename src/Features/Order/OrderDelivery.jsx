@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useUserDetailed } from "../../Hooks/useUserProfile";
 import { useUser } from "../Authentication/useUser";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useCartItem } from "../Cart/useCartItems";
 import { useCreateOrder } from "./useCreateOrder"; 
 import { useNavigate } from "react-router-dom";
@@ -9,6 +9,8 @@ import Button from "../../ui/Button";
 import toast from "react-hot-toast";
 import MiniLoader from "../../ui/MiniLoader";
 import { createOrderItems } from "../../Services/apiOrder";
+import { redeemPromoCode, validatePromoCode } from "../../Services/apiPromos";
+import { clearCheckedItems, clearPromo } from "../../store";
 import { v4 as uuidv4 } from 'uuid';
 import { useDeleteMultipleCartItem } from "./useDeleteMultipleCartItem";
 import { checkoutSchema } from "../../Validation/schemas";
@@ -183,8 +185,10 @@ export default function  OrderDelivery(){
   const [zipCode, setZipCode] = useState("")
   const [showNewAddress, setShowNewAddress] = useState(false)
   const [showNewPhoneNumber, setShowNewPhoneNumber] = useState(false)
-  const totalPrice = useSelector(state => state.cart.totalAmount)
+  const totalPrice = useSelector((state) => state.cart.totalAmount);
   const checkedItems = useSelector((state) => state.cart.checkedItems);
+  const appliedPromo = useSelector((state) => state.cart.appliedPromo);
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const userId = user?.id
   const userEmail = user?.email
@@ -228,6 +232,27 @@ export default function  OrderDelivery(){
         return toast.error("Please use either saved or new phone number, not both");
       }
 
+      const subtotal = checkedCartItems.reduce((acc, item) => {
+        const unitPrice = Number(item.size_price) || Number(item.products?.price) || 0;
+        return acc + unitPrice * (Number(item.quantity) || 1);
+      }, 0);
+
+      let validatedPromoCode = null;
+      let discountAmount = 0;
+      let finalTotalPrice = Number(totalPrice) || subtotal;
+
+      if (appliedPromo?.code) {
+        try {
+          const verifiedPromo = await validatePromoCode(appliedPromo.code);
+          validatedPromoCode = verifiedPromo.code;
+          discountAmount = Math.round(((subtotal * verifiedPromo.discountPercent) / 100) * 100) / 100;
+          finalTotalPrice = Math.max(0, Math.round((subtotal - discountAmount) * 100) / 100);
+        } catch (promoErr) {
+          dispatch(clearPromo());
+          return toast.error(promoErr.message || "Your applied promo code is no longer valid.");
+        }
+      }
+
       // Strict client-side validation using Zod
       const checkoutData = {
         fullName: fullNameDisplay || "Customer",
@@ -235,12 +260,12 @@ export default function  OrderDelivery(){
         shippingAddress: shipTo,
         contactInfo: contactInfo,
         zipCode: zipCode,
-        totalPrice: Number(totalPrice),
+        totalPrice: Number(finalTotalPrice),
         items: checkedCartItems.map((item) => ({
           product_id: item.product_id,
           product_name: item.products?.name || "Product",
           quantity: item.quantity,
-          price: item.products?.price || 0,
+          price: Number(item.size_price) || Number(item.products?.price) || 0,
           size: item.size,
         })),
       };
@@ -263,6 +288,8 @@ export default function  OrderDelivery(){
         fullName: result.data.fullName,
         userEmail: result.data.userEmail,
         contactInfo: result.data.contactInfo,
+        promoCode: validatedPromoCode,
+        discountAmount,
       });
 
       if (!orderDetails?.id) {
@@ -271,6 +298,13 @@ export default function  OrderDelivery(){
 
       await createOrderItems(userId, orderId, checkedCartItems);
 
+      if (validatedPromoCode) {
+        await redeemPromoCode(validatedPromoCode).catch((err) => {
+          console.warn("Could not increment promo usage:", err?.message);
+        });
+      }
+
+      dispatch(clearCheckedItems());
       toast.success("Order placed! Proceed to checkout.");
       navigate("/order");
 
