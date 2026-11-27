@@ -223,24 +223,24 @@ export default function AboutUs() {
         </StoryImageContainer>
 
         <StoryContent>
-          <h3>Purity In Every Drop. Radiance In Every Touch.</h3>
+          <h3>Honest Formulas. Simple Botanical Care.</h3>
           <p>
-            Forever Radiant was founded on a simple truth: nature and modern dermatology are not opposites, but the ultimate collaborators. Our journey began with the ambition to craft honest, transparent elixirs free from harsh industrial fillers, silicones, and parabens.
+            Forever Radiant started with a straightforward goal: build everyday skincare and haircare using pure plant oils, unrefined butters, and soothing extracts without heavy fillers, silicones, or parabens.
           </p>
           <p>
-            Every formula in our collection is curated in small, intentional batches using cold-pressed African seed oils, pure aloe vera extracts, and clinical botanical actives. We test tirelessly for efficacy and texture so your morning and evening rituals feel like pure sanctuary.
+            Every formula in our catalog is prepared in small batches using cold-pressed African seed oils, aloe vera, and gentle botanicals—focusing on texture, absorption, and comfort so your morning and evening routine feels effortless.
           </p>
           <p>
-            From our artisan headquarters to your dressing table, we ensure sustainable packaging, fair-trade raw material sourcing, and dermatologist-tested purity.
+            From sourcing raw ingredients responsibly to sealing every bottle cleanly before dispatch, we prioritize quality you can actually feel over empty marketing claims.
           </p>
         </StoryContent>
       </StorySection>
 
       {/* MISSION BANNER */}
       <MissionBanner>
-        <h3>Our Core Purpose</h3>
+        <h3>Our Purpose</h3>
         <p>
-          "To elevate daily self-care rituals through potent, clean botanical formulations that celebrate and nurture the natural radiance of every skin tone and hair texture."
+          "To make gentle, clean botanical skincare and haircare practical for everyday routines across every skin tone and hair texture."
         </p>
       </MissionBanner>
 
@@ -255,9 +255,9 @@ export default function AboutUs() {
             <div className="icon">
               <HiOutlineSparkles />
             </div>
-            <h4>Artisanal Integrity</h4>
+            <h4>Small-Batch Freshness</h4>
             <p>
-              Small-batch formulated to guarantee ingredient freshness and maximum potency in every bottle.
+              Prepared in measured runs so active plant oils and butters stay fresh and effective.
             </p>
           </ValueCard>
 
@@ -265,9 +265,9 @@ export default function AboutUs() {
             <div className="icon">
               <HiOutlineCheckBadge />
             </div>
-            <h4>Dermatologically Proven</h4>
+            <h4>Gentle &amp; Balanced</h4>
             <p>
-              Non-comedogenic, pH-balanced formulas designed specifically to soothe and nourish sensitive skin types.
+              Non-comedogenic, pH-balanced formulas made to soothe and hydrate sensitive skin.
             </p>
           </ValueCard>
 
@@ -275,9 +275,9 @@ export default function AboutUs() {
             <div className="icon">
               <HiOutlineUserGroup />
             </div>
-            <h4>Customer Centricity</h4>
+            <h4>Reliable Support</h4>
             <p>
-              Dedicated direct support, seamless checkout with concurrency protection, and rapid door-to-door delivery.
+              Responsive direct support, straightforward checkout, and tracked door-to-door delivery.
             </p>
           </ValueCard>
 
@@ -285,9 +285,9 @@ export default function AboutUs() {
             <div className="icon">
               <HiOutlineHeart />
             </div>
-            <h4>100% Cruelty Free</h4>
+            <h4>Cruelty Free</h4>
             <p>
-              Zero animal testing, ethically sourced botanical extracts, and sustainable recyclable packaging.
+              Zero animal testing, ethically sourced plant ingredients, and recyclable packaging.
             </p>
           </ValueCard>
         </ValuesGrid>
@@ -295,8 +295,8 @@ export default function AboutUs() {
 
       {/* CTA SECTION */}
       <CtaSection>
-        <h3>Ready to Transform Your Ritual?</h3>
-        <p>Explore our carefully crafted skincare and haircare collections.</p>
+        <h3>Find What Fits Your Routine</h3>
+        <p>Browse our latest skincare and haircare formulas.</p>
         <Link to="/collection">
           Explore The Collection <HiOutlineArrowRight />
         </Link>

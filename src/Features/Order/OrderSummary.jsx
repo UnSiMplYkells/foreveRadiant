@@ -78,7 +78,7 @@ const Wrapper = styled.div`
 const Table = styled.table`
   width: 100%;
   font-size: 1em;
-  border-bottom: 10px groove whitesmoke;
+  border-bottom: 2px solid var(--border-color, #e5e7eb);
   margin-bottom: 30px;
 
   @media (max-width: 400px){
@@ -92,15 +92,15 @@ const Table = styled.table`
 
 const TableRow = styled.tr`
   &:not(:last-child) {
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border-color, #ddd);
   }
 `;
 
 const TableHeader = styled.th`
   text-align: left;
   padding: 12px 15px;
-  background-color: whitesmoke;
-  border-bottom: 2px solid #ddd;
+  background-color: var(--bg-surface-soft, whitesmoke);
+  border-bottom: 2px solid var(--border-color, #ddd);
 
     ${(props) =>
     props.$colQuantity &&

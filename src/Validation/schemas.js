@@ -184,3 +184,39 @@ export function validateReviewPayload(data) {
   return reviewSchema.parse(data);
 }
 
+
+// ==========================================
+// 5. ADMIN PROMO CODE SCHEMA & DTO
+// ==========================================
+export const promoCodeSchema = z
+  .object({
+    code: z
+      .string({ required_error: "Promo code is required" })
+      .trim()
+      .transform((val) => val.toUpperCase())
+      .refine((val) => val.length >= 3 && val.length <= 32, {
+        message: "Code must be between 3 and 32 characters",
+      })
+      .refine((val) => /^[A-Z0-9_-]+$/.test(val), {
+        message: "Code may only contain letters, numbers, hyphens, and underscores",
+      }),
+    discount_percent: z.coerce
+      .number({ required_error: "Discount percentage is required" })
+      .gt(0, "Discount must be greater than 0%")
+      .max(100, "Discount cannot exceed 100%"),
+    description: z.string().trim().max(200, "Description cannot exceed 200 characters").optional().default(""),
+    mode: z.enum(["manual", "timed"]).default("manual"),
+    is_active: z.boolean().default(true),
+    expires_at: z.string().nullable().optional(),
+    max_uses: z
+      .union([z.literal(""), z.null(), z.undefined(), z.coerce.number().int().positive("Max uses must be at least 1")])
+      .transform((val) => (val === "" || val === undefined || val === null ? null : Number(val))),
+  })
+  .refine(
+    (data) => data.mode === "manual" || (data.expires_at && !Number.isNaN(Date.parse(data.expires_at))),
+    {
+      message: "Expiration date & time is required for time-based promos",
+      path: ["expires_at"],
+    }
+  );
+

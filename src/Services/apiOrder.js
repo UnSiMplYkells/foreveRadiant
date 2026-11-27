@@ -1,25 +1,54 @@
 import supabase from "./supabase";
 
-export async function createOrder(userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName, userEmail, contactInfo) {
-  const { data: orderDetails, error } = await supabase
+export async function createOrder(
+  userId,
+  totalPrice,
+  orderStatus,
+  zipCode,
+  shipTo,
+  orderId,
+  fullName,
+  userEmail,
+  contactInfo,
+  promoCode = null,
+  discountAmount = 0
+) {
+  const baseRow = {
+    user_id: userId,
+    total_price: totalPrice,
+    status: orderStatus && orderStatus !== "not paid" ? orderStatus : "pending",
+    is_paid: false,
+    payment_status: "unpaid",
+    zip_code: zipCode,
+    shipping_address: shipTo,
+    order_id: orderId,
+    email: userEmail,
+    full_name: fullName,
+    contact: contactInfo,
+  };
+
+  const rowWithPromo = promoCode
+    ? { ...baseRow, promo_code: promoCode, discount_amount: Number(discountAmount) || 0 }
+    : baseRow;
+
+  let { data: orderDetails, error } = await supabase
     .from("orders")
-    .insert([
-      {
-        user_id: userId,
-        total_price: totalPrice,
-        status: orderStatus && orderStatus !== "not paid" ? orderStatus : "pending",
-        is_paid: false,
-        payment_status: "unpaid",
-        zip_code: zipCode,
-        shipping_address: shipTo,
-        order_id: orderId,
-        email: userEmail,
-        full_name: fullName,
-        contact: contactInfo,
-      },
-    ])
+    .insert([rowWithPromo])
     .select()
     .single();
+
+  // Fallback if promo columns are not yet present in remote orders table
+  if (
+    error &&
+    promoCode &&
+    (String(error.code) === "42703" ||
+      String(error.code) === "PGRST204" ||
+      String(error.message || "").toLowerCase().includes("promo_code"))
+  ) {
+    const retry = await supabase.from("orders").insert([baseRow]).select().single();
+    orderDetails = retry.data;
+    error = retry.error;
+  }
 
   if (error) {
     console.error("Error creating order:", error.message);

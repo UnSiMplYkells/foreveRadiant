@@ -6,7 +6,7 @@ export function useCreateOrder(){
   const queryClient = useQueryClient()
 
   const {mutateAsync: createOrder, isPending: isCreatingOrder} = useMutation({
-    mutationFn: ({userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName, userEmail, contactInfo}) => createOrderApi(userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName, userEmail, contactInfo),
+    mutationFn: ({userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName, userEmail, contactInfo, promoCode, discountAmount}) => createOrderApi(userId, totalPrice, orderStatus, zipCode, shipTo, orderId, fullName, userEmail, contactInfo, promoCode, discountAmount),
     onSuccess: () => {
       queryClient.invalidateQueries(["orders"])
       toast.success("Order placed successfully")

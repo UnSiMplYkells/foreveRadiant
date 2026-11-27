@@ -5,6 +5,7 @@ import {
   FaBoxes,
   FaShippingFast,
   FaChartLine,
+  FaTag,
   FaUserShield,
   FaStore,
 } from "react-icons/fa";
@@ -147,7 +148,7 @@ export default function AdminLayout() {
           <h1>
             Admin <span>Management Portal_</span>
           </h1>
-          <p>Enterprise catalog control, order fulfillment pipeline, and financial intelligence</p>
+          <p>Manage products, orders, promo codes, and store analytics</p>
         </div>
       </AdminTopHeader>
 
@@ -171,6 +172,11 @@ export default function AdminLayout() {
         <AdminTabLink to="/admin/analytics">
           <FaChartLine />
           <span>Visual Analytics</span>
+        </AdminTabLink>
+
+        <AdminTabLink to="/admin/promos">
+          <FaTag />
+          <span>Promo Codes</span>
         </AdminTabLink>
 
         <AdminTabLink to="/admin/profile">

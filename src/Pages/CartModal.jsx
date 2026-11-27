@@ -182,7 +182,8 @@ const ModalContainer = styled.div`
   position: fixed;
   bottom: 0;
   top: auto;
-  background-color: whitesmoke;
+  background-color: var(--bg-card, whitesmoke);
+  color: var(--text-primary);
   width: 100%;
   z-index: 2000;
 
